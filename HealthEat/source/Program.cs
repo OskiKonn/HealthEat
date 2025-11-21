@@ -29,20 +29,21 @@ namespace HealthEat
             WindowSpecification winSpec = new WindowSpecification()
             {
                 title = "HealthEat",
-                width = 800u,
-                height = 600u,
-                resizable = true,
+                width = 1024u,
+                height = 720u,
+                resizable = false,
                 VSync = false
             };
 
             Window window = new Window(winSpec);
+            window.Test();
 
             while (window.IsOpen)
             {
                 window.HandleEvents();
-
                 //window.Update();
-                window.Test();
+                    
+                
                 Thread.Sleep(10);
             }
         }

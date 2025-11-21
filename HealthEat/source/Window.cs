@@ -85,7 +85,11 @@ namespace HealthEat.Rendering
             sm_RenderWindow.Clear(SFG.Color.White);
             TextObject textObj = new TextObject("Test text", 48, "test1");
             textObj.Context.Position = new SFS.Vector2f(100f, 100f);
-            Renderer.Get.AddRenderObject(textObj);
+
+            Scene newScene = new Scene("Test scene");
+            newScene.AddToScene(textObj);
+            SceneManager.Get.RegisterScene(newScene);
+
             Renderer.Get.Render();
             sm_RenderWindow.Display();
         }

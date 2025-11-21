@@ -29,8 +29,6 @@ namespace HealthEat.Rendering
             m_ContextType = typeof(T).Name;
             m_Context = contextType;
         }
-        public T Context => m_Context;
-        public SFG.Drawable DrawingContext => m_Context;
         
         public override bool Equals(Object? obj)
         {
@@ -44,8 +42,11 @@ namespace HealthEat.Rendering
 
         public string Name => m_Name;
         public int ID => m_ID;
+        public T Context => m_Context;
+        public SFG.Drawable DrawingContext => m_Context;
 
         protected T m_Context;
+
         private readonly string m_ContextType;
         private readonly string m_Name;
         private readonly int m_ID;
@@ -55,14 +56,16 @@ namespace HealthEat.Rendering
     {
 
         public TextObject(string text, uint charSize = 24, string? objectName = null)
-            : this(new SFG.Text(text, new SFG.Font("C:\\WINDOWS\\FONTS\\ARIAL.TTF"), charSize), objectName) { }
+            : this(new SFG.Text(text, m_Font, charSize), objectName) { }
 
         public TextObject(SFG.Text text, string? objectName = null) : base(text, objectName)
         {
             m_Context.FillColor = SFG.Color.Red;
-            m_Context.Font = new SFG.Font("C:/WINDOWS/FONTS/ARIAL.TTF");
+            m_Context.Font = m_Font;
             m_Context.CharacterSize = 24;
         }
+
+        private static readonly SFG.Font m_Font = new SFG.Font("C:/Windows/Fonts/Arial.ttf");
 
     }
 
