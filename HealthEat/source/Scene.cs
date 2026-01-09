@@ -8,7 +8,7 @@ using SFG = SFML.Graphics;
 using SFS = SFML.System;
 using SFW = SFML.Window;
 
-namespace HealthEat.Rendering
+namespace HealthEat
 {
     internal class Scene
     {
@@ -18,19 +18,24 @@ namespace HealthEat.Rendering
             m_id = SceneManager.Get.ObtainID();
         }
 
+        ~Scene()
+        {
+            m_SceneObjects.Clear();
+        }
+
         public bool AddToScene(IRenderable renderObject)
         {
             if (!m_SceneObjects.Add(renderObject))
             {
 
                 #if DEBUG
-                Console.WriteLine($"Failed adding RenderObject {renderObject.Name} to renderer. Make sure to not duplicate object name");
+                Console.WriteLine($"[Scene_{m_Name}]: Failed adding RenderObject {renderObject.Name} to renderer. Make sure to not duplicate object name");
                 #endif
                 return false;
             }
 
             #if DEBUG
-            Console.WriteLine("Added test object: { " + renderObject.Name + ", " + renderObject.ID + " }");
+            Console.WriteLine($"[Scene_{m_Name}]: Added test object:  {{ { renderObject.Name}, {renderObject.ID} }}");
             #endif
 
             return true;

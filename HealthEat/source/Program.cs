@@ -4,7 +4,7 @@ using System.Threading;
 using SFG = SFML.Graphics;
 using SFW = SFML.Window;
 using SFML.Graphics;
-using HealthEat.Rendering;
+using HealthEat;
 
 namespace HealthEat
 {
@@ -36,6 +36,9 @@ namespace HealthEat
             };
 
             Window window = new Window(winSpec);
+            ResourceManager resManager = new();
+            resManager.LoadResources();
+
             window.Test();
 
             while (window.IsOpen)

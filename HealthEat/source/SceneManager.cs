@@ -8,7 +8,7 @@ using SFG = SFML.Graphics;
 using SFS = SFML.System;
 using SFW = SFML.Window;
 
-namespace HealthEat.Rendering
+namespace HealthEat
 {
     internal class SceneManager
     {
@@ -17,6 +17,13 @@ namespace HealthEat.Rendering
         private SceneManager()
         {
             Console.WriteLine("SceneManager created!");
+        }
+
+        ~SceneManager()
+        {
+            m_Scenes.Clear();
+            m_SceneCount = 0;
+            m_ActiveScene = null;
         }
 
         public bool RegisterScene(Scene sc)

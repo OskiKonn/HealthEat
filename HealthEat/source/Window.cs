@@ -1,4 +1,5 @@
-﻿using System;
+﻿
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,7 +9,8 @@ using SFG = SFML.Graphics;
 using SFW = SFML.Window;
 using SFS = SFML.System;
 
-namespace HealthEat.Rendering
+
+namespace HealthEat
 {
     internal struct WindowSpecification
     {
@@ -57,6 +59,8 @@ namespace HealthEat.Rendering
             m_View = sm_RenderWindow.GetView();
             SubscribeEventHandlers();
 
+            m_Clock = new HE_Clock();
+
         }
 
         ~Window()
@@ -76,19 +80,40 @@ namespace HealthEat.Rendering
 
         public void Update()
         {
-            sm_RenderWindow.Clear(SFG.Color.Blue);
+            sm_RenderWindow.Clear(HE_Color.Blue);
+
+            float deltaTime = m_Clock.Restart().AsSeconds();
+
             sm_RenderWindow.Display();
         }
 
         public void Test()
         {
-            sm_RenderWindow.Clear(SFG.Color.White);
-            TextObject textObj = new TextObject("Test text", 48, "test1");
+            sm_RenderWindow.Clear(HE_Color.White);
+            TextObject textObj = new TextObject("Kocham Pati <3", 48, "test1");
             textObj.Context.Position = new SFS.Vector2f(100f, 100f);
 
+            SpriteObject sprObj = new SpriteObject("menubtn.png", "testSprite");
+            sprObj.Context.Position = new HE_Vec2(120f, 120f);
+            sprObj.Context.Scale = new HE_Vec2(0.5f, 0.5f);
+
+            HE_FloatRect bounds = sprObj.Context.GetGlobalBounds();
+            RectangleShapeObject border = new RectangleShapeObject(new HE_Vec2(bounds.Width * 2f, bounds.Height * 2f), "blabla");
+            border.Context.FillColor = HE_Color.Transparent;
+            border.Context.OutlineColor = HE_Color.Green;
+            border.Context.OutlineThickness = 2.0f;
+            border.Context.Position = new HE_Vec2(bounds.Left - bounds.Width / 2, bounds.Top - bounds.Height / 2);
+
+            Entity ent = new Entity(new HE_Vec2(280.0f, 280.0f), "Enty", "stats-transp.png", 0.7f);
+
             Scene newScene = new Scene("Test scene");
+            ent.SetDebugMode(true, newScene);
             newScene.AddToScene(textObj);
+            newScene.AddToScene(sprObj);
+            newScene.AddToScene(border);
+            newScene.AddToScene(ent);
             SceneManager.Get.RegisterScene(newScene);
+            ent.Move(new HE_Vec2(100f, 20f));
 
             Renderer.Get.Render();
             sm_RenderWindow.Display();
@@ -107,11 +132,13 @@ namespace HealthEat.Rendering
             sm_RenderWindow.Resized += OnResize;
         }
 
+
         public bool IsOpen => sm_RenderWindow.IsOpen;
         public static SFG.RenderWindow ActiveWindow => sm_RenderWindow;
 
         private WindowSpecification m_WinSpec;
         private static SFG.RenderWindow sm_RenderWindow = null!;
         private SFG.View m_View;
+        private HE_Clock m_Clock;
     }
 }
