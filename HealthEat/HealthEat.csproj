@@ -6,14 +6,14 @@
     <ImplicitUsings>disable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
-    <DocumentationFile>F:\MojeProjekty\HealthEat\docs.xml</DocumentationFile>
+    <DocumentationFile>C:\Users\Oskar\Studia\JPWP\HealthEat\docs.xml</DocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="SFML.Net" Version="2.6.0" />
   </ItemGroup>
 	<ItemGroup>
-		<Content Include="F:\MojeProjekty\HealthEat\HealthEat\resources\**\*">
+		<Content Include="C:\Users\Oskar\Studia\JPWP\HealthEat\HealthEat\resources\**\*">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</Content>
 	</ItemGroup>

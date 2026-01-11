@@ -29,9 +29,10 @@ namespace HealthEat
                 return;
             }
 
-            foreach (IRenderable obj in activeScene.SceneObjects)
+            foreach (SceneLayer layer in activeScene.LayerStack)
             {
-                Window.ActiveWindow.Draw(obj.DrawingContext);
+                foreach(IRenderable obj in layer.LayerObjects)
+                    Window.ActiveWindow.Draw(obj.DrawingContext);
             }
 
         }

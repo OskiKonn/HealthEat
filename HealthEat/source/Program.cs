@@ -35,7 +35,8 @@ namespace HealthEat
                 VSync = false
             };
 
-            Window window = new Window(winSpec);
+            InputController ic = new();
+            Window window = new Window(winSpec, ic);
             ResourceManager resManager = new();
             resManager.LoadResources();
 

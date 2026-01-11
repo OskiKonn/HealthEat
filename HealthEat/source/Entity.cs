@@ -15,16 +15,16 @@ namespace HealthEat
         
         public Entity(string name) : this(new HE_Vec2(0.0f, 0.0f), name)
         {
-            Console.WriteLine("[Entity]: Created entity");
+            Console.WriteLine($"[Entity]: Created entity {name}");
         }
 
 
-        public Entity(HE_Vec2 position, string name, float scale = 1.0f, bool interactable = false) : this(position, name, new HE_Vec2(scale, scale), interactable) { }
-        public Entity(HE_Vec2 position, string name, string texture, float scale = 1.0f, bool interactable = false) :
+        public Entity(HE_Vec2 position, string name, float scale = 1.0f, bool touchable = false, bool interactable = false, bool clickable = false) : this(position, name, new HE_Vec2(scale, scale), interactable, clickable) { }
+        public Entity(HE_Vec2 position, string name, string texture, float scale = 1.0f, bool touchable = false, bool interactable = false, bool clickable = false) :
             this(position, name, texture, new HE_Vec2(scale, scale), interactable) { }
 
 
-        public Entity(HE_Vec2 position, string name, HE_Vec2 scale, bool interactable = false) : base(name)
+        public Entity(HE_Vec2 position, string name, HE_Vec2 scale, bool touchable = false, bool interactable = false, bool clickable = false) : base(name)
         {
             if (!ValidateArguments(position, scale))
                 throw new HE_InvalidArgumentValueException("[HE_Exception]: Invalid constructor argument");
@@ -32,7 +32,9 @@ namespace HealthEat
             m_Context.Position = position;
             m_Name = "Entity_" + name;
             m_Context.Scale = scale;
+            m_Touchable = touchable;
             m_Interactable = interactable;
+            m_Clickable = clickable;
             m_Index = AssignEntityIndex();
 
             m_Bounds = m_Context.GetGlobalBounds();
@@ -41,10 +43,12 @@ namespace HealthEat
             m_Border.Context.OutlineColor = HE_Color.Transparent;
             m_Border.Context.OutlineThickness = 2.0f;
             m_Border.Context.Position = new HE_Vec2(m_Bounds.Left, m_Bounds.Top);
+
+            Console.WriteLine($"[Entity]: Created entity {name}");
         }
 
 
-        public Entity(HE_Vec2 position, string name, string texture, HE_Vec2 scale, bool interactable = false) : base(texture, name)
+        public Entity(HE_Vec2 position, string name, string texture, HE_Vec2 scale, bool touchable = false, bool interactable = false, bool clickable = false) : base(texture, name)
         {
             if (!ValidateArguments(position, scale))
                 throw new HE_InvalidArgumentValueException("[HE_Exception]: Invalid constructor argument");
@@ -52,7 +56,9 @@ namespace HealthEat
             m_Context.Position = position;
             m_Name = "Entity_" + name;
             m_Context.Scale = scale;
+            m_Touchable = touchable;
             m_Interactable = interactable;
+            m_Clickable = clickable;
             m_Index = AssignEntityIndex();
 
             m_Bounds = m_Context.GetGlobalBounds();
@@ -61,6 +67,8 @@ namespace HealthEat
             m_Border.Context.OutlineColor = HE_Color.Transparent;
             m_Border.Context.OutlineThickness = 2.0f;
             m_Border.Context.Position = new HE_Vec2(m_Bounds.Left, m_Bounds.Top);
+
+            Console.WriteLine($"[Entity]: Created entity {name}");
         }
 
 
@@ -108,7 +116,7 @@ namespace HealthEat
             else if (!val && m_DebugMode == true)
             {
                 m_Border.Context.OutlineColor = HE_Color.Transparent;
-                scene.DeleteFromScene(m_Border);
+                scene.RemoveFromScene(m_Border);
                 m_DebugMode = val;
             }
 
@@ -148,7 +156,7 @@ namespace HealthEat
         }
 
 
-
+        public bool CanTouch => m_Touchable;
         public float Velocity { get => m_Velocity; set { if (value > 0.0f) m_Velocity = value; } }
         public HE_Sprite Body => m_Context;
         public HE_FloatRect Bounds => m_Bounds;
@@ -160,6 +168,8 @@ namespace HealthEat
         private readonly uint m_Index;
         private readonly string m_Name = "Entity_-1";
         private bool m_Interactable = false;
+        private bool m_Touchable = false;
+        private bool m_Clickable = false;
         private bool m_DebugMode = false;
         private float m_Velocity = 1.0f;
 

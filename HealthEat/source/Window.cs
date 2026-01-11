@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using SFG = SFML.Graphics;
 using SFW = SFML.Window;
 using SFS = SFML.System;
+using SFML.Window;
 
 
 namespace HealthEat
@@ -42,11 +43,13 @@ namespace HealthEat
     internal class Window
     {
 
-        public Window() : this(new WindowSpecification()) { }
+        public Window(InputController ic) : this(new WindowSpecification(), ic) { }
 
-        public Window(WindowSpecification winSpec)
+        public Window(WindowSpecification winSpec, InputController ic)
         {
             m_WinSpec = winSpec;
+            m_Clock = new HE_Clock();
+            m_InputCtrl = ic;
 
             SFW.VideoMode videoMode = new SFW.VideoMode(m_WinSpec.width, m_WinSpec.height);
             SFW.Styles winStyles = SFW.Styles.Titlebar | SFW.Styles.Close;
@@ -58,8 +61,6 @@ namespace HealthEat
             sm_RenderWindow.SetVerticalSyncEnabled(m_WinSpec.VSync);
             m_View = sm_RenderWindow.GetView();
             SubscribeEventHandlers();
-
-            m_Clock = new HE_Clock();
 
         }
 
@@ -106,14 +107,16 @@ namespace HealthEat
 
             Entity ent = new Entity(new HE_Vec2(280.0f, 280.0f), "Enty", "stats-transp.png", 0.7f);
 
+            SceneLayer layer = new();
             Scene newScene = new Scene("Test scene");
+            newScene.PushLayer(layer);
             ent.SetDebugMode(true, newScene);
-            newScene.AddToScene(textObj);
-            newScene.AddToScene(sprObj);
-            newScene.AddToScene(border);
-            newScene.AddToScene(ent);
+            layer.AddToLayer(textObj);
+            layer.AddToLayer(sprObj);
+            layer.AddToLayer(border);
+            layer.AddToLayer(ent);
             SceneManager.Get.RegisterScene(newScene);
-            ent.Move(new HE_Vec2(100f, 20f));
+            ent.Move(new HE_Vec2(300f, 20f));
 
             Renderer.Get.Render();
             sm_RenderWindow.Display();
@@ -128,8 +131,10 @@ namespace HealthEat
         private void SubscribeEventHandlers()
         {
             sm_RenderWindow.Closed += (object? s, EventArgs e) => Close();
-            sm_RenderWindow.KeyPressed += (object? s, SFW.KeyEventArgs ke) => { Console.WriteLine(ke.Scancode); };
             sm_RenderWindow.Resized += OnResize;
+            sm_RenderWindow.KeyPressed += m_InputCtrl.HandleKbInput;
+            sm_RenderWindow.MouseButtonPressed += m_InputCtrl.HandleMousePressedEvent;
+            sm_RenderWindow.MouseButtonReleased += m_InputCtrl.HandleMouseReleasedEvent;
         }
 
 
@@ -140,5 +145,6 @@ namespace HealthEat
         private static SFG.RenderWindow sm_RenderWindow = null!;
         private SFG.View m_View;
         private HE_Clock m_Clock;
+        private readonly InputController m_InputCtrl;
     }
 }
