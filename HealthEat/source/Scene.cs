@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using HealthEat.Exceptions;
+
 using SFG = SFML.Graphics;
 using SFS = SFML.System;
 using SFW = SFML.Window;
@@ -41,21 +43,12 @@ namespace HealthEat
         {
             if (m_LayerCount == 0)
             {
-                #if DEBUG
-                Console.WriteLine($"[Scene_{m_Name}]: Failed adding object to layer. LayerCount is zero");
-                #endif
-
-                return false;
+                throw new HE_LogicException($"[Scene_{m_Name}]: Failed adding object to layer. LayerCount is zero", HE_ExceptionType.Soft);
             }
 
             if (nLayer > m_LayerCount || nLayer < 0)
-            {
-                #if DEBUG
-                Console.WriteLine($"[Scene_{m_Name}]: Failed adding object to layer {nLayer}. Layer doesn't exist");
-                #endif
+                throw new HE_InvalidArgumentValueException($"[Scene_{m_Name}]: Failed adding object to layer {nLayer}. Layer doesn't exist");
 
-                return false;
-            }
             else if (nLayer == 0)
             {
                 SceneLayer topLayer = m_LayerStack[^1];
@@ -71,20 +64,12 @@ namespace HealthEat
         {
             if (m_LayerCount == 0)
             {
-                #if DEBUG
-                Console.WriteLine($"[Scene_{m_Name}]: Failed removing object from layer. LayerCount is zero");
-                #endif
-
-                return false;
+                throw new HE_LogicException($"[Scene_{m_Name}]: Failed removing object from layer. LayerCount is zero", HE_ExceptionType.Soft);
             }
 
             if (nLayer > m_LayerCount || nLayer < 0)
             {
-                #if DEBUG
-                Console.WriteLine($"[Scene_{m_Name}]: Failed removing object from layer {nLayer}. Layer doesn't exist");
-                #endif
-
-                return false;
+                throw new HE_InvalidArgumentValueException($"[Scene_{m_Name}]: Failed removing object from layer {nLayer}. Layer doesn't exist");
             }
             else if (nLayer == 0)
             {

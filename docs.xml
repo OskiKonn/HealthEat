@@ -1,0 +1,130 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>HealthEat</name>
+    </assembly>
+    <members>
+        <member name="T:HealthEat.Vector2Extension">
+            <summary>
+            Extension for SFML Vector2f class
+            </summary>
+        </member>
+        <member name="M:HealthEat.Vector2Extension.GetLength(SFML.System.Vector2f)">
+            <summary>
+            Returns length of vector
+            </summary>
+            <param name="v">vector instance</param>
+            <returns>Vector length</returns>
+        </member>
+        <member name="T:HealthEat.Exceptions.HE_ExceptionType">
+            <summary>
+            Enum type used to identify the exception kind
+            </summary>
+        </member>
+        <member name="T:HealthEat.Exceptions.HE_Exception">
+            <summary>
+            Base class for HealthEat exceptions. Extends standard Exception class with exception kind
+            </summary>
+        </member>
+        <member name="M:HealthEat.Exceptions.HE_Exception.#ctor(System.String)">
+            <summary>
+            Default constructor. Specifies kind as Soft
+            </summary>
+            <param name="msg">Error message to display</param>
+        </member>
+        <member name="M:HealthEat.Exceptions.HE_Exception.#ctor(System.String,HealthEat.Exceptions.HE_ExceptionType)">
+            <summary>
+            Initializes new exception with specified exception type
+            </summary>
+            <param name="msg">Error message to display</param>
+            <param name="type">Exception type</param>
+        </member>
+        <member name="P:HealthEat.Exceptions.HE_Exception.Type">
+            <summary>
+            Type of exception
+            </summary>
+        </member>
+        <member name="T:HealthEat.Exceptions.HE_AssetLoadException">
+            <summary>
+            Exception thrown when error while loading asset occurs.
+            Exception of kind Critical.
+            </summary>
+        </member>
+        <member name="M:HealthEat.Exceptions.HE_AssetLoadException.#ctor(System.String,System.String)">
+            <summary>
+            Initializes new exceptions with specified message and optionally name of asset that failed to load
+            </summary>
+            <param name="msg">Error message to be displayed</param>
+            <param name="asssetName">Name of asset</param>
+        </member>
+        <member name="T:HealthEat.Exceptions.HE_MissingAssetException">
+            <summary>
+            Exception thrown when application tries to access missing asset
+            </summary>
+        </member>
+        <member name="M:HealthEat.Exceptions.HE_MissingAssetException.#ctor(System.String,System.String)">
+            <summary>
+            Initializes new exception with specified message and optionally name of asset that is missing
+            </summary>
+            <param name="msg">Error message to be displayed</param>
+            <param name="asssetName">Name of asset</param>
+        </member>
+        <member name="T:HealthEat.RenderObject`1">
+            <summary>
+            Base abstract generic class for in-game rendering mechanism. Serves as a base for other classes used in rendering such as TextObject.
+            Creates DrawingContext of type T that is later used for actions on SFML types during rendering
+            </summary>
+            <typeparam name="T">Type of SFML framework type to be used as rendedring context</typeparam>
+        </member>
+        <member name="M:HealthEat.RenderObject`1.GetNextIDStr">
+            <summary>
+            Method used for obtaining id to be assigned to the object in form of string type
+            </summary>
+            <returns>New id of the object as string</returns>
+        </member>
+        <member name="M:HealthEat.RenderObject`1.GetNextID">
+            <summary>
+            Method used for obtaining id to be assigned to the object
+            </summary>
+            <returns>New if of the object</returns>
+        </member>
+        <member name="P:HealthEat.RenderObject`1.Name">
+            <summary>
+            Name of the render object
+            </summary>
+        </member>
+        <member name="P:HealthEat.RenderObject`1.ID">
+            <summary>
+            ID of the rendering object
+            </summary>
+        </member>
+        <member name="P:HealthEat.RenderObject`1.Context">
+            <summary>
+            Drawing context as T type
+            </summary>
+        </member>
+        <member name="P:HealthEat.RenderObject`1.DrawingContext">
+            <summary>
+            Drawing context as SFML Drawable class object
+            </summary>
+        </member>
+        <member name="T:HealthEat.TextObject">
+            <summary>
+            Wrapper for SFML Text class used in rendering process
+            </summary>
+        </member>
+        <member name="T:HealthEat.SpriteObject">
+            <summary>
+            Wrapper for SFML Sprite class used in rendering process
+            </summary>
+        </member>
+        <member name="M:HealthEat.ResourceManager.GetTexture(System.String)">
+            <summary>
+            Gets loaded texture of name specified by tname.
+            </summary>
+            <param name="tname">Name of texture</param>
+            <returns>Loaded texture</returns>
+            <exception cref="T:HealthEat.Exceptions.HE_MissingAssetException">Throws when texture of specified name is not loaded</exception>
+        </member>
+    </members>
+</doc>

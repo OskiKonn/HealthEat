@@ -13,7 +13,7 @@
     <PackageReference Include="SFML.Net" Version="2.6.0" />
   </ItemGroup>
 	<ItemGroup>
-		<Content Include="C:\Users\Oskar\Studia\JPWP\HealthEat\HealthEat\resources\**\*">
+		<Content Include="F:\MojeProjekty\HealthEat\HealthEat\resources\**\*">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</Content>
 	</ItemGroup>

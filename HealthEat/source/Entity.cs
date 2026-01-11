@@ -32,9 +32,9 @@ namespace HealthEat
             m_Context.Position = position;
             m_Name = "Entity_" + name;
             m_Context.Scale = scale;
-            m_Touchable = touchable;
-            m_Interactable = interactable;
-            m_Clickable = clickable;
+            Touchable = touchable;
+            Interactable = interactable;
+            Clickable = clickable;
             m_Index = AssignEntityIndex();
 
             m_Bounds = m_Context.GetGlobalBounds();
@@ -56,9 +56,9 @@ namespace HealthEat
             m_Context.Position = position;
             m_Name = "Entity_" + name;
             m_Context.Scale = scale;
-            m_Touchable = touchable;
-            m_Interactable = interactable;
-            m_Clickable = clickable;
+            Touchable = touchable;
+            Interactable = interactable;
+            Clickable = clickable;
             m_Index = AssignEntityIndex();
 
             m_Bounds = m_Context.GetGlobalBounds();
@@ -138,6 +138,22 @@ namespace HealthEat
         }
 
 
+        public virtual void InteractCallback(HE_InteractInfo info)
+        {
+            #if DEBUG
+            Console.WriteLine($"[Entity_{m_Name}]: Entity interacted");
+            #endif
+        }
+
+
+        public virtual void ClickCallback(HE_ClickInfo info)
+        {
+            #if DEBUG
+            Console.WriteLine($"[Entity_{m_Name}]: Entity clicked");
+            #endif
+        }
+
+
         private uint AssignEntityIndex()
         {
             return sm_NextIndex++;
@@ -156,22 +172,22 @@ namespace HealthEat
         }
 
 
-        public bool CanTouch => m_Touchable;
+        public bool CanTouch => Touchable;
         public float Velocity { get => m_Velocity; set { if (value > 0.0f) m_Velocity = value; } }
         public HE_Sprite Body => m_Context;
         public HE_FloatRect Bounds => m_Bounds;
         public HE_Vec2 Position => m_Context.Position;
+        public bool Touchable { get; set; }
+        public bool Interactable { get; set; }
+        public bool Clickable { get; set; }
 
-        private HE_Vec2 m_Position;
-        private HE_FloatRect m_Bounds;
-        private RectangleShapeObject m_Border;
+        protected HE_Vec2 m_Position;
+        protected HE_FloatRect m_Bounds;
+        protected RectangleShapeObject m_Border;
+        protected float m_Velocity = 1.0f;
         private readonly uint m_Index;
         private readonly string m_Name = "Entity_-1";
-        private bool m_Interactable = false;
-        private bool m_Touchable = false;
-        private bool m_Clickable = false;
         private bool m_DebugMode = false;
-        private float m_Velocity = 1.0f;
 
         private static uint sm_NextIndex = 0;
     }

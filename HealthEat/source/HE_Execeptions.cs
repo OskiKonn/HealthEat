@@ -87,4 +87,10 @@ namespace HealthEat.Exceptions
         public HE_InvalidArgumentValueException(string msg) : base(msg, HE_ExceptionType.Critical) { }
 
     }
+
+
+    internal class HE_LogicException : HE_Exception
+    {
+        public HE_LogicException(string msg, HE_ExceptionType type) : base(msg, type) { }
+    }
 }

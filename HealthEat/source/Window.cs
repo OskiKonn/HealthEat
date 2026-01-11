@@ -43,13 +43,14 @@ namespace HealthEat
     internal class Window
     {
 
-        public Window(InputController ic) : this(new WindowSpecification(), ic) { }
+        public Window(GameManager manager) : this(new WindowSpecification(), manager) { }
 
-        public Window(WindowSpecification winSpec, InputController ic)
+        public Window(WindowSpecification winSpec, GameManager manager)
         {
             m_WinSpec = winSpec;
             m_Clock = new HE_Clock();
-            m_InputCtrl = ic;
+            m_GameManager = manager;
+            //m_InputCtrl = ic;
 
             SFW.VideoMode videoMode = new SFW.VideoMode(m_WinSpec.width, m_WinSpec.height);
             SFW.Styles winStyles = SFW.Styles.Titlebar | SFW.Styles.Close;
@@ -76,6 +77,7 @@ namespace HealthEat
 
         public void HandleEvents()
         {
+            m_Tick = m_Clock.Restart().AsSeconds();
             sm_RenderWindow.DispatchEvents();
         }
 
@@ -83,7 +85,6 @@ namespace HealthEat
         {
             sm_RenderWindow.Clear(HE_Color.Blue);
 
-            float deltaTime = m_Clock.Restart().AsSeconds();
 
             sm_RenderWindow.Display();
         }
@@ -132,19 +133,24 @@ namespace HealthEat
         {
             sm_RenderWindow.Closed += (object? s, EventArgs e) => Close();
             sm_RenderWindow.Resized += OnResize;
-            sm_RenderWindow.KeyPressed += m_InputCtrl.HandleKbInput;
-            sm_RenderWindow.MouseButtonPressed += m_InputCtrl.HandleMousePressedEvent;
-            sm_RenderWindow.MouseButtonReleased += m_InputCtrl.HandleMouseReleasedEvent;
+            sm_RenderWindow.KeyPressed += m_GameManager.InputController.HandleKbInput;
+            sm_RenderWindow.MouseButtonPressed += m_GameManager.InputController.HandleMousePressedEvent;
+            sm_RenderWindow.MouseButtonReleased += m_GameManager.InputController.HandleMouseReleasedEvent;
+            sm_RenderWindow.MouseMoved += m_GameManager.InputController.HandleMouseMovedEvent;
+            // m_InputCtrl.MovementEvent += (object? s, HE_MovementEventArgs e) => { Console.WriteLine($"Movement: {e.Action}"); };
         }
 
 
         public bool IsOpen => sm_RenderWindow.IsOpen;
         public static SFG.RenderWindow ActiveWindow => sm_RenderWindow;
+        public static float GetTick => m_Tick;
 
+        private readonly GameManager m_GameManager;
         private WindowSpecification m_WinSpec;
         private static SFG.RenderWindow sm_RenderWindow = null!;
         private SFG.View m_View;
         private HE_Clock m_Clock;
-        private readonly InputController m_InputCtrl;
+        private static float m_Tick = 0f;
+        //private readonly InputController m_InputCtrl;
     }
 }

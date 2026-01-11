@@ -35,15 +35,17 @@ namespace HealthEat
                 VSync = false
             };
 
-            InputController ic = new();
-            Window window = new Window(winSpec, ic);
             ResourceManager resManager = new();
             resManager.LoadResources();
+            InputController ic = new();
+            GameManager manager = new GameManager(ic);
+            Window window = new Window(winSpec, manager);
 
             window.Test();
 
             while (window.IsOpen)
             {
+                manager.Update();
                 window.HandleEvents();
                 //window.Update();
                     
