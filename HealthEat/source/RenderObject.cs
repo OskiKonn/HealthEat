@@ -1,4 +1,5 @@
 ﻿using HealthEat.Exceptions;
+using SFML.Window;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -15,11 +16,31 @@ using SFW = SFML.Window;
 namespace HealthEat
 {
 
+    internal enum HE_RenderObjectType : byte
+    {
+        Text,
+        Sprite,
+        RectangleShape,
+        Entity
+    }
+
+
     internal interface IRenderable
     {
+        HE_RenderObjectType ObjectType { get; }
         SFG.Drawable DrawingContext { get; }
         string Name { get; }
         int ID { get; }
+        bool Visible { get; set; }
+    }
+
+
+    internal interface IReadOnlySprite
+    {
+        HE_FloatRect Body { get; }
+        RectangleShapeObject Border { get; }
+        HE_FloatRect Bounds { get; }
+        HE_Vec2 Position { get; }
     }
 
 
@@ -36,8 +57,11 @@ namespace HealthEat
             m_ID = m_Name.GetHashCode();
             m_ContextType = typeof(T).Name;
             m_Context = contextType;
+            Visible = true;
         }
         
+        public abstract HE_RenderObjectType ObjectType { get; }
+
         public override bool Equals(Object? obj)
         {
             return obj is IRenderable other && m_ID == other.ID;
@@ -46,6 +70,11 @@ namespace HealthEat
         public override int GetHashCode()
         {
             return m_ID;
+        }
+
+        public void Destroy()
+        {
+            m_Expired = true;
         }
 
         /// <summary>
@@ -88,11 +117,15 @@ namespace HealthEat
         /// </summary>
         public SFG.Drawable DrawingContext => m_Context;
 
+        public bool Visible { get; set; } = true;
+        public bool IsExpired => m_Expired;
+
         protected T m_Context;
+        protected bool m_Expired = false;
+        protected string m_Name;
 
         private static int sm_NextID = 1;
         private readonly string m_ContextType;
-        private readonly string m_Name;
         private readonly int m_ID;
     }
 
@@ -110,7 +143,12 @@ namespace HealthEat
             m_Context.FillColor = SFG.Color.Red;
             m_Context.Font = m_Font;
             m_Context.CharacterSize = 24;
+
+            HE_FloatRect bounds = m_Context.GetGlobalBounds();
+            m_Context.Origin = new HE_Vec2(bounds.Width / 2, bounds.Height / 2);
         }
+
+        public override HE_RenderObjectType ObjectType => HE_RenderObjectType.Text;
 
         private static readonly SFG.Font m_Font = new SFG.Font("C:/Windows/Fonts/Arial.ttf");
 
@@ -120,27 +158,68 @@ namespace HealthEat
     /// <summary>
     /// Wrapper for SFML Sprite class used in rendering process
     /// </summary>
-    internal class SpriteObject : RenderObject<HE_Sprite>
+    internal class SpriteObject : RenderObject<HE_Sprite>, IReadOnlySprite
     {
 
-        public SpriteObject() : this("Unnamed") { }
-        public SpriteObject(string name) : base(new HE_Sprite(), name)
+        public SpriteObject() : this(new HE_Vec2(0f, 0f), "Unnamed") { }
+        public SpriteObject(HE_Vec2 position, string name, float scale = 1.0f) : base(new HE_Sprite(), name)
         {
-        #if DEBUG
+            //if (!ValidateArguments(position, scale))
+            //    throw new HE_InvalidArgumentValueException("[HE_Exception]: Invalid constructor argument");
+
+            m_Context.Scale = new HE_Vec2(scale, scale);
+
+            HE_FloatRect localBnds = m_Context.GetLocalBounds();
+            m_Context.Origin = new HE_Vec2(localBnds.Width / 2.0f, localBnds.Height / 2.0f);
+
+            m_Context.Position = position;
+            m_Name = "Sprite_" + name;
+
+            m_Bounds = m_Context.GetGlobalBounds();
+            m_Border = new RectangleShapeObject(new HE_Vec2(m_Bounds.Width, m_Bounds.Height), $"{m_Name}_border");
+            m_Border.Context.Origin = new HE_Vec2(m_Bounds.Width / 2.0f, m_Bounds.Height / 2.0f);
+            m_Border.Context.FillColor = HE_Color.Transparent;
+            m_Border.Context.OutlineColor = HE_Color.Transparent;
+            m_Border.Context.OutlineThickness = 2.0f;
+            m_Border.Context.Position = m_Context.Position;
+
+
+#if HE_DEBUG
             Console.WriteLine("Created sprite object without texture");
             #endif
         }
 
-        public SpriteObject(string texture, string name) : base
-            (new HE_Sprite(ResourceManager.Get.GetTexture(texture)), name)
-        { }
+        public SpriteObject(string texture, string name) : this(new HE_Vec2(0f, 0f), texture, name) { }
 
-        public SpriteObject(HE_Texture txt, string name) : base(new HE_Sprite(txt), name)
+
+        public SpriteObject(HE_Vec2 position, string texture, string name, float scale = 1.0f) : base(new HE_Sprite(ResourceManager.Get.GetTexture(texture)), name)
         {
-            #if DEBUG
+
+            //if (!ValidateArguments(position, scale))
+            //    throw new HE_InvalidArgumentValueException("[HE_Exception]: Invalid constructor argument");
+
+            m_Context.Scale = new HE_Vec2(scale, scale);
+            HE_FloatRect localBnds = m_Context.GetLocalBounds();
+            m_Context.Origin = new HE_Vec2(localBnds.Width / 2.0f, localBnds.Height / 2.0f);
+
+            m_Context.Position = position;
+            m_Name = "Sprite_" + name;
+
+            m_Bounds = m_Context.GetGlobalBounds();
+            m_Border = new RectangleShapeObject(new HE_Vec2(m_Bounds.Width, m_Bounds.Height), $"{m_Name}_border");
+            m_Border.Context.Origin = new HE_Vec2(m_Bounds.Width / 2.0f, m_Bounds.Height / 2.0f);
+            m_Border.Context.FillColor = HE_Color.Transparent;
+            m_Border.Context.OutlineColor = HE_Color.Transparent;
+            m_Border.Context.OutlineThickness = 2.0f;
+            m_Border.Context.Position = m_Context.Position;
+
+
+#if HE_DEBUG
             Console.WriteLine("Created sprite object");
             #endif
         }
+
+        public override HE_RenderObjectType ObjectType => HE_RenderObjectType.Sprite;
 
         public void SetTexture(HE_Texture txt)
         {
@@ -155,12 +234,63 @@ namespace HealthEat
             }
             catch (HE_MissingAssetException e)
             {
-                #if DEBUG
+                #if HE_DEBUG
                 Console.WriteLine(e.Message);
                 #endif
                 return;
             }
         }
+
+        public void SetPosition(float x, float y)
+        {
+            SetPosition(new HE_Vec2(x, y));
+        }
+
+        public void SetPosition(HE_Vec2 position)
+        {
+            m_Context.Position = position;
+            m_Border.Context.Position = m_Context.Position;
+            m_Bounds = m_Context.GetGlobalBounds();
+        }
+
+        public void SetDebugMode(bool val)
+        {
+
+            if (val && m_DebugMode == false)
+            {
+                m_Border.Context.OutlineColor = HE_Color.Green;
+                m_DebugMode = val;
+            }
+            else if (!val && m_DebugMode == true)
+            {
+                m_Border.Context.OutlineColor = HE_Color.Transparent;
+                m_DebugMode = val;
+            }
+
+        }
+
+        protected static bool ValidateArguments(HE_Vec2 pos, float scale)
+        {
+            if (pos.X < 0.0f || pos.Y < 0.0f)
+                return false;
+
+            if (scale <= 0.0f)
+                return false;
+
+            return true;
+        }
+
+        public HE_Sprite Sprite => m_Context;
+        public RectangleShapeObject Border => m_Border;
+        public HE_FloatRect Body => m_Bounds;
+        public HE_FloatRect Bounds => Body;
+        public HE_Vec2 Position => m_Context.Position;
+
+        protected HE_Vec2 m_Position;
+        protected HE_FloatRect m_Bounds;
+        protected RectangleShapeObject m_Border;
+
+        private bool m_DebugMode = false;
 
     }
 
@@ -170,16 +300,20 @@ namespace HealthEat
         public RectangleShapeObject() : this("Unnamed_FloatRect") { }
         public RectangleShapeObject(string name) : base(new HE_RectShape(), name)
         {
-            #if DEBUG
+            #if HE_DEBUG
             Console.WriteLine($"Created RectangleShape {name}");
             #endif
+
         }
+
         public RectangleShapeObject(HE_Vec2 size, string name) : base(new HE_RectShape(size), name)
         {
-            #if DEBUG
+            #if HE_DEBUG
             Console.WriteLine($"Created RectangleShape {name}");
             #endif
         }
+
+        public override HE_RenderObjectType ObjectType => HE_RenderObjectType.RectangleShape;
 
     }
 

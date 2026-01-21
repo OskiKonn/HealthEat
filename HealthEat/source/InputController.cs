@@ -1,4 +1,5 @@
-﻿using SFML.Window;
+﻿
+using SFML.Window;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,91 +14,98 @@ namespace HealthEat
 
         public InputController()
         {
+            sm_Instance = this;
 
-            #if DEBUG
+            HE_EventBus.Get.RegisterEvent<HE_KeyEvent>();
+            HE_EventBus.Get.RegisterEvent<HE_MouseClickedEvent>();
+            HE_EventBus.Get.RegisterEvent<HE_MouseMoveEvent>();
+            HE_EventBus.Get.RegisterEvent<HE_MousePressedEvent>();
+            HE_EventBus.Get.RegisterEvent<HE_MouseReleasedEvent>();
+
+            #if HE_DEBUG
             Console.WriteLine("[InputController]: Created InputController");
             #endif
         }
 
 
-        public int GetInputFlags()
+        public void UpdateKeyStates()
         {
-            return (int)m_MovementFlags | m_MouseFlags;
-        }
-
-
-        public HE_Vec2i GetMousePos()
-        {
-            return HE_Mouse.GetPosition(Window.ActiveWindow);
-        }
-
-
-        public void HandleKbInput(object? s, KeyEventArgs e)
-        {
-            if (e.Code != HE_Key.Unknown) m_LastKey = e.Code;
-
-            switch (e.Code)
+            foreach(KeyValuePair<HE_Key, bool> kvp in m_CurrKeyState)
             {
-                case HE_Key.A:
-                    KeyPressedEvent?.Invoke(this, new HE_KeyPressedArgs(HE_Key.A));
-                    MovementEvent?.Invoke(this, new HE_MovementEventArgs(HE_MovementFlags.MoveLeft));
-                    m_MovementFlags |= HE_MovementFlags.MoveRight;
-                    break;
+                m_PrevKeyState[kvp.Key] = kvp.Value;
+                m_CurrKeyState[kvp.Key] = HE_KeyBoard.IsKeyPressed(kvp.Key);
+            }
+        }
 
-                case HE_Key.D:
-                    KeyPressedEvent?.Invoke(this, new HE_KeyPressedArgs(HE_Key.D));
-                    MovementEvent?.Invoke(this, new HE_MovementEventArgs(HE_MovementFlags.MoveRight));
-                    m_MovementFlags |= HE_MovementFlags.MoveRight;
-                    break;
 
-                case HE_Key.W:
-                    KeyPressedEvent?.Invoke(this, new HE_KeyPressedArgs(HE_Key.W));
-                    MovementEvent?.Invoke(this, new HE_MovementEventArgs(HE_MovementFlags.MoveUp));
-                    m_MovementFlags |= HE_MovementFlags.MoveUp;
-                    break;
+        public void SetDefaultKeybinds()
+        {
+            m_Keybinds[HE_Action.MoveUp] = HE_Key.W;
+            m_Keybinds[HE_Action.MoveDown] = HE_Key.S;
+            m_Keybinds[HE_Action.MoveLeft] = HE_Key.A;
+            m_Keybinds[HE_Action.MoveRight] = HE_Key.D;
+            m_Keybinds[HE_Action.Jump] = HE_Key.Space;
+            m_Keybinds[HE_Action.Interact] = HE_Key.E;
+            m_Keybinds[HE_Action.Enter] = HE_Key.Enter;
+            m_Keybinds[HE_Action.Pause] = HE_Key.Escape;
+            m_Keybinds[HE_Action.Return] = HE_Key.Backspace;
 
-                case HE_Key.S:
-                    KeyPressedEvent?.Invoke(this, new HE_KeyPressedArgs(HE_Key.S));
-                    MovementEvent?.Invoke(this, new HE_MovementEventArgs(HE_MovementFlags.MoveDown));
-                    m_MovementFlags |= HE_MovementFlags.MoveDown;
-                    break;
+            foreach (KeyValuePair<HE_Action, HE_Key> kvp in m_Keybinds)
+            {
+                m_CurrKeyState[kvp.Value] = false;
+                m_PrevKeyState[kvp.Value] = false;
+            }
+        }
 
-                case HE_Key.Space:
-                    KeyPressedEvent?.Invoke(this, new HE_KeyPressedArgs(HE_Key.Space));
-                    MovementEvent?.Invoke(this, new HE_MovementEventArgs(HE_MovementFlags.Jump));
-                    m_MovementFlags |= HE_MovementFlags.Jump;
-                    break;
 
-                case HE_Key.E:
-                    KeyPressedEvent?.Invoke(this, new HE_KeyPressedArgs(HE_Key.E));
-                    ActionEvent?.Invoke(this, new HE_ActionEventArgs(HE_ActionType.Interact));
-                    break;
+        public bool IsActionHeld(HE_Action action)
+        {
 
-                case HE_Key.Enter:
-                    KeyPressedEvent?.Invoke(this, new HE_KeyPressedArgs(HE_Key.Enter));
-                    ActionEvent?.Invoke(this, new HE_ActionEventArgs(HE_ActionType.Enter));
-                    break;
-
-                case HE_Key.Backspace:
-                    KeyPressedEvent?.Invoke(this, new HE_KeyPressedArgs(HE_Key.Backspace));
-                    ActionEvent?.Invoke(this, new HE_ActionEventArgs(HE_ActionType.Return));
-                    break;
-
-                default:
-                    KeyPressedEvent?.Invoke(this, new HE_KeyPressedArgs(e.Code));
-                    break;
+            if (m_Keybinds.TryGetValue(action, out HE_Key key))
+            {
+                return m_CurrKeyState[key];
             }
 
-            #if DEBUG
-            Console.WriteLine($"[InputController]: Pressed key '{e.Code.ToString()}'");
-            #endif
+            return false;
+        }
+
+
+        public bool IsActionTriggered(HE_Action action)
+        {
+            if (m_Keybinds.TryGetValue(action, out HE_Key key))
+            {
+                bool isDown = m_CurrKeyState[key];
+                bool wasDown = m_PrevKeyState[key];
+
+                return isDown && !wasDown;
+            }
+
+            return false;
+        }
+
+
+        //public HE_Vec2i GetMousePos()
+        //{
+        //    return HE_Mouse.GetPosition(Window.ActiveWindow);
+        //}
+
+
+        public void HandleKeyPress(object? s, KeyEventArgs e)
+        {
+            HandleKeyAction(s, e, HE_KeyAction.Pressed);
+        }
+
+
+        public void HandleKeyRelease(object? s, KeyEventArgs e)
+        {
+            HandleKeyAction(s, e, HE_KeyAction.Released);
         }
 
 
         public void HandleMousePressedEvent(object? s, MouseButtonEventArgs e)
         {
-            if (s == null || (s != null && (HE_RenderWindow)s != Window.ActiveWindow))
-                return;
+            //if (s == null || (s != null && (HE_RenderWindow)s != Window.ActiveWindow))
+            //    return;
 
             m_LastPressedPos = new HE_Vec2i(e.X, e.Y);
 
@@ -106,30 +114,30 @@ namespace HealthEat
                 m_Dragging = true;
                 m_MousePosDragStart = m_LastPressedPos;
                 m_TimeSinceLastPress = 0f;
-                MousePressEvent?.Invoke(this, new HE_MouseMoveEventArgs(e.X, e.Y));
+                HE_EventBus.Get.BroadcastEvent<HE_MousePressedEvent>(new HE_MousePressedEvent(e.X, e.Y, e.Button));
             }
         }
 
 
         public void HandleMouseReleasedEvent(object? s, MouseButtonEventArgs e)
         {
-            if (s == null || (s != null && (HE_RenderWindow)s != Window.ActiveWindow))
-            {
-                m_LastPressedPos = new HE_Vec2i(0, 0);
-                return;
-            }
+            //if (s == null || (s != null && (HE_RenderWindow)s != Window.ActiveWindow))
+            //{
+            //    m_LastPressedPos = new HE_Vec2i(0, 0);
+            //    return;
+            //}
 
             HE_Vec2i relPos = new HE_Vec2i(e.X, e.Y);
             float releaseOffset = (relPos - m_LastPressedPos).GetLength();
 
             if ((m_TimeSinceLastPress <= m_MaxClickTimespan) && (releaseOffset <= m_MaxReleaseOffset))
             {
-                HE_MouseClickedArgs args = new HE_MouseClickedArgs(m_LastPressedPos, e.Button);
-                MouseClickedEvent?.Invoke(this, args);
-                MouseReleaseEvent?.Invoke(this, new HE_MouseMoveEventArgs(args.X, args.Y));
+                HE_MouseClickedEvent args = new HE_MouseClickedEvent(m_LastPressedPos, e.Button);
+                HE_EventBus.Get.BroadcastEvent<HE_MouseClickedEvent>(args);
+                HE_EventBus.Get.BroadcastEvent<HE_MouseReleasedEvent>(new HE_MouseReleasedEvent(args.X, args.Y, e.Button));
                 m_Dragging = false;
 
-                #if DEBUG
+                #if HE_DEBUG
                 Console.WriteLine($"[InputController]: Mouse clicked at {args.X}, {args.Y} with {args.BtnClicked}");
                 #endif
 
@@ -137,9 +145,9 @@ namespace HealthEat
             }
 
             m_Dragging = false;
-            MouseReleaseEvent?.Invoke(this, new HE_MouseMoveEventArgs(e.X, e.Y));
-            #if DEBUG
-            Console.WriteLine($"[InputController]: Mouse realeased at {e.X}, {e.Y}");
+            HE_EventBus.Get.BroadcastEvent<HE_MouseReleasedEvent>(new HE_MouseReleasedEvent(e.X, e.Y, e.Button));
+            #if HE_DEBUG
+            //Console.WriteLine($"[InputController]: Mouse realeased at {e.X}, {e.Y}");
             #endif
 
         }
@@ -147,36 +155,47 @@ namespace HealthEat
 
         public void HandleMouseMovedEvent(object? s, MouseMoveEventArgs e)
         {
-            if (s == null || (s != null && (HE_RenderWindow)s != Window.ActiveWindow))
-            {
-                m_MouseMovingPos = new HE_Vec2i(0, 0);
-                return;
-            }
+            //if (s == null || (s != null && (HE_RenderWindow)s != Window.ActiveWindow))
+            //{
+            //    m_MouseMovingPos = new HE_Vec2i(0, 0);
+            //    return;
+            //}
             if (m_Dragging)
             {
                 m_TimeSinceLastPress += GameManager.GetTick;
                 m_MouseMovingPos = new HE_Vec2i(e.X, e.Y);
-                MouseMovedEvent?.Invoke(this, new HE_MouseMoveEventArgs(e.X, e.Y));
+                HE_EventBus.Get.BroadcastEvent<HE_MouseMoveEvent>(new HE_MouseMoveEvent(e.X, e.Y));
             }
             
         }
 
 
-        public event EventHandler<HE_MouseClickedArgs>? MouseClickedEvent;
-        public event EventHandler<HE_KeyPressedArgs>? KeyPressedEvent;
-        public event EventHandler<HE_MovementEventArgs>? MovementEvent;
-        public event EventHandler<HE_ActionEventArgs>? ActionEvent;
-        public event EventHandler<HE_MouseMoveEventArgs>? MousePressEvent;
-        public event EventHandler<HE_MouseMoveEventArgs>? MouseMovedEvent;
-        public event EventHandler<HE_MouseMoveEventArgs>? MouseReleaseEvent;
+        private void HandleKeyAction(object? s, KeyEventArgs e, HE_KeyAction keyAction)
+        {
+            if (e.Code != HE_Key.Unknown) m_LastKey = e.Code;
+
+            HE_EventBus.Get.BroadcastEvent<HE_KeyEvent>(new HE_KeyEvent(e.Code, keyAction, e.Control));
+
+            #if HE_DEBUG
+            //Console.WriteLine($"[InputController]: {keyAction.ToString()} key '{e.Code.ToString()}'");
+            #endif
+        }
+
+
+        public static InputController Get => sm_Instance;
+
         public bool IsDragging => m_Dragging;
         public HE_Key LastKeyPressed => m_LastKey;
-        public int MovementFlags => (int)m_MovementFlags;
+        //public int MovementFlags => (int)m_MovementFlags;
         public int MouseFlags => m_MouseFlags;
 
+        private static InputController sm_Instance = null!;
+        private Dictionary<HE_Action, HE_Key> m_Keybinds = new Dictionary<HE_Action, HE_Key>(9);
+        private Dictionary<HE_Key, bool> m_CurrKeyState = new Dictionary<HE_Key, bool>(9);
+        private Dictionary<HE_Key, bool> m_PrevKeyState = new Dictionary<HE_Key, bool>(9);
         private bool m_Dragging = false;
         private HE_Key m_LastKey;
-        private HE_MovementFlags m_MovementFlags = 0;
+        //private HE_MovementFlags m_MovementFlags = 0;
         private int m_MouseFlags = 0;
         private HE_Vec2i m_LastPressedPos = new HE_Vec2i(0, 0);
         private HE_Vec2i m_MouseMovingPos = new HE_Vec2i(0, 0);
@@ -189,10 +208,10 @@ namespace HealthEat
     }
 
 
-    internal class HE_MouseClickedArgs : EventArgs
+    internal struct HE_MouseClickedEvent : IHE_EventType
     {
 
-        public HE_MouseClickedArgs(HE_Vec2i pos, HE_MouseBtn btn)
+        public HE_MouseClickedEvent(HE_Vec2i pos, HE_MouseBtn btn)
         {
             ClickPos = pos;
             BtnClicked = btn;
@@ -208,39 +227,41 @@ namespace HealthEat
     }
 
 
-    internal class HE_KeyPressedArgs : EventArgs
+    internal struct HE_KeyEvent : IHE_EventType
     {
 
-        public HE_KeyPressedArgs(HE_Key key, bool mod = false)
+        public HE_KeyEvent(HE_Key key, HE_KeyAction keyAction, bool mod = false)
         {
             Key = key;
+            KeyAction = keyAction;
             Modifier = mod;
         }
 
         public HE_Key Key { get; }
+        public HE_KeyAction KeyAction { get; }
         public bool Modifier { get; }
 
     }
 
 
-    internal class HE_MovementEventArgs : EventArgs
+    //internal struct HE_MovementEvent : IHE_EventType
+    //{
+
+    //    public HE_MovementEvent(HE_MovementFlags flag, HE_KeyAction keyAction)
+    //    {
+    //        Action = flag;
+    //        KeyAction = keyAction;
+    //    }
+
+    //    public HE_MovementFlags Action { get; }
+    //    public HE_KeyAction KeyAction { get; }
+    //}
+
+
+    internal struct HE_MouseMoveEvent : IHE_EventType
     {
 
-        public HE_MovementEventArgs(HE_MovementFlags flag)
-        {
-            Action = flag;
-            Tick = GameManager.GetTick;
-        }
-
-        public HE_MovementFlags Action { get; }
-        public float Tick { get; }
-    }
-
-
-    internal class HE_MouseMoveEventArgs : EventArgs
-    {
-
-        public HE_MouseMoveEventArgs(int x, int y)
+        public HE_MouseMoveEvent(int x, int y)
         {
             X = x;
             Y = y;
@@ -251,42 +272,67 @@ namespace HealthEat
     }
 
 
-    internal class HE_ActionEventArgs : EventArgs
+    internal struct HE_MousePressedEvent : IHE_EventType
     {
 
-        public HE_ActionEventArgs(HE_ActionType type)
+        public HE_MousePressedEvent(int x, int y, HE_Mouse.Button btn)
+        {
+            X = x;
+            Y = y;
+            Button = btn;
+        }
+
+        public int X { get; }
+        public int Y { get; }
+        public HE_Mouse.Button Button { get; }
+    }
+
+    internal struct HE_MouseReleasedEvent : IHE_EventType
+    {
+
+        public HE_MouseReleasedEvent(int x, int y, HE_Mouse.Button btn)
+        {
+            X = x;
+            Y = y;
+            Button = btn;
+        }
+
+        public int X { get; }
+        public int Y { get; }
+        public HE_Mouse.Button Button { get; }
+    }
+
+
+    internal struct HE_ActionEvent : IHE_EventType
+    {
+
+        public HE_ActionEvent(HE_Action type)
         {
             Action = type;
         }
 
-        public HE_ActionType Action { get; }
+        public HE_Action Action { get; }
 
     }
 
 
-    internal enum HE_MovementFlags : int
+    internal enum HE_Action : int
     {
-        NoMove = 0x00,
-        MoveLeft = 0x01,
-        MoveRight = 0x02,
-        MoveUp = 0x04,
-        MoveDown = 0x08,
-        Jump = 0x10
+        Interact = 0,
+        Enter,
+        Return,
+        Pause,
+        MoveUp,
+        MoveDown,
+        MoveLeft,
+        MoveRight,
+        Jump
     }
 
 
-    internal enum HE_MouseFlags : int
+    internal enum HE_KeyAction : uint
     {
-        LeftClicked = 0x20,
-        RightClicked = 0x40,
-        MiddleClicked = 0x80
-    }
-
-
-    internal enum HE_ActionType : int
-    {
-        Interact = 0x01,
-        Enter = 0x02,
-        Return = 0x04
+        Pressed = 1,
+        Released = 2
     }
 }

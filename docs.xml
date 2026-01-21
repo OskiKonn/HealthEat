@@ -16,6 +16,13 @@
             <param name="v">vector instance</param>
             <returns>Vector length</returns>
         </member>
+        <member name="M:HealthEat.Vector2Extension.GetLength(SFML.System.Vector2i)">
+            <summary>
+            Returns length of vector
+            </summary>
+            <param name="v">vector instance</param>
+            <returns>Vector length</returns>
+        </member>
         <member name="T:HealthEat.Exceptions.HE_ExceptionType">
             <summary>
             Enum type used to identify the exception kind

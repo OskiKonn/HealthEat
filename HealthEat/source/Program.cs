@@ -1,4 +1,6 @@
 ﻿
+#define HE_DEBUG
+
 using System;
 using System.Threading;
 using SFG = SFML.Graphics;
@@ -37,21 +39,24 @@ namespace HealthEat
 
             ResourceManager resManager = new();
             resManager.LoadResources();
-            InputController ic = new();
-            GameManager manager = new GameManager(ic);
-            Window window = new Window(winSpec, manager);
 
-            window.Test();
+            //InputController ic = new();
+            //ic.SetDefaultKeybinds();
+            GameManager manager = new GameManager();
+            manager.Run();
+            //Window window = new Window(winSpec);
 
-            while (window.IsOpen)
-            {
-                manager.Update();
-                window.HandleEvents();
-                //window.Update();
+            //window.Test();
+
+            //while (window.IsOpen)
+            //{
+            //    window.HandleEvents();
+            //    manager.Update();
+            //    window.Update();
                     
                 
-                Thread.Sleep(10);
-            }
+            //    Thread.Sleep(10);
+            //}
         }
     }
 }

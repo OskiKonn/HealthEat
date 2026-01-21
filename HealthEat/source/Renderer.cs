@@ -8,6 +8,7 @@ using SFG = SFML.Graphics;
 using SFS = SFML.System;
 using SFW = SFML.Window;
 
+using HealthEat.Exceptions;
 
 namespace HealthEat
 {
@@ -18,28 +19,31 @@ namespace HealthEat
         private Renderer() { }
 
 
-        public void Render()
+        public void Render(List<Scene> sceneList)
         {
 
-            Scene? activeScene = SceneManager.Get.AcitveScene;
 
-            if (activeScene == null)
-            {
-                Console.WriteLine("Null active scene!!!");
-                return;
-            }
+            //if (SceneToRender == null)
+            //{
+            //    throw new HE_LogicException("[Renderer]: There is no active scene", HE_ExceptionType.Critical);
+            //}
 
-            foreach (SceneLayer layer in activeScene.LayerStack)
-            {
-                foreach(IRenderable obj in layer.LayerObjects)
-                    Window.ActiveWindow.Draw(obj.DrawingContext);
-            }
+            //foreach (SceneLayer layer in SceneToRender.LayerStack)
+            //{
+            //    foreach(IRenderable obj in layer.LayerObjects)
+            //    {
+            //        if (obj.Visible)
+            //            Window.ActiveWindow.Draw(obj.DrawingContext);
+            //    }
+            //}
+
 
         }
 
         
 
         public static Renderer Get => s_Instance.Value;
+        public static Scene? SceneToRender { get; set; }
         //private HashSet<Scene> m_RenderObjects = new HashSet<IRenderable>(10);
     }
 }

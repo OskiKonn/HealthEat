@@ -43,13 +43,13 @@ namespace HealthEat
     internal class Window
     {
 
-        public Window(GameManager manager) : this(new WindowSpecification(), manager) { }
+        public Window(InputController controller) : this(new WindowSpecification()) { }
 
-        public Window(WindowSpecification winSpec, GameManager manager)
+        public Window(WindowSpecification winSpec)
         {
             m_WinSpec = winSpec;
-            m_Clock = new HE_Clock();
-            m_GameManager = manager;
+            //m_Clock = new HE_Clock();
+            //m_InputCtrl = controller;
             //m_InputCtrl = ic;
 
             SFW.VideoMode videoMode = new SFW.VideoMode(m_WinSpec.width, m_WinSpec.height);
@@ -58,99 +58,75 @@ namespace HealthEat
             if (m_WinSpec.resizable)
                 winStyles |= SFW.Styles.Resize;
 
-            sm_RenderWindow = new SFG.RenderWindow(videoMode, m_WinSpec.title, winStyles);
-            sm_RenderWindow.SetVerticalSyncEnabled(m_WinSpec.VSync);
-            m_View = sm_RenderWindow.GetView();
+            m_RenderWindow = new SFG.RenderWindow(videoMode, m_WinSpec.title, winStyles);
+            m_RenderWindow.SetVerticalSyncEnabled(m_WinSpec.VSync);
+            m_View = m_RenderWindow.GetView();
             SubscribeEventHandlers();
 
         }
 
         ~Window()
         {
-            sm_RenderWindow.Dispose();
+            m_RenderWindow.Dispose();
         }
 
         public void Close()
         {
-            sm_RenderWindow.Close();
+            m_RenderWindow.Close();
         }
 
         public void HandleEvents()
         {
-            m_Tick = m_Clock.Restart().AsSeconds();
-            sm_RenderWindow.DispatchEvents();
+            // m_Tick = m_Clock.Restart().AsSeconds();
+            m_RenderWindow.Clear(HE_Color.White);
+            m_RenderWindow.DispatchEvents();
         }
 
         public void Update()
         {
-            sm_RenderWindow.Clear(HE_Color.Blue);
-
-
-            sm_RenderWindow.Display();
+            // HandleEvents();
+            //Renderer.Get.Render();
+            m_RenderWindow.Display();
         }
 
         public void Test()
         {
-            sm_RenderWindow.Clear(HE_Color.White);
-            TextObject textObj = new TextObject("Kocham Pati <3", 48, "test1");
-            textObj.Context.Position = new SFS.Vector2f(100f, 100f);
+            m_RenderWindow.Clear(HE_Color.White);
+            
 
-            SpriteObject sprObj = new SpriteObject("menubtn.png", "testSprite");
-            sprObj.Context.Position = new HE_Vec2(120f, 120f);
-            sprObj.Context.Scale = new HE_Vec2(0.5f, 0.5f);
-
-            HE_FloatRect bounds = sprObj.Context.GetGlobalBounds();
-            RectangleShapeObject border = new RectangleShapeObject(new HE_Vec2(bounds.Width * 2f, bounds.Height * 2f), "blabla");
-            border.Context.FillColor = HE_Color.Transparent;
-            border.Context.OutlineColor = HE_Color.Green;
-            border.Context.OutlineThickness = 2.0f;
-            border.Context.Position = new HE_Vec2(bounds.Left - bounds.Width / 2, bounds.Top - bounds.Height / 2);
-
-            Entity ent = new Entity(new HE_Vec2(280.0f, 280.0f), "Enty", "stats-transp.png", 0.7f);
-
-            SceneLayer layer = new();
-            Scene newScene = new Scene("Test scene");
-            newScene.PushLayer(layer);
-            ent.SetDebugMode(true, newScene);
-            layer.AddToLayer(textObj);
-            layer.AddToLayer(sprObj);
-            layer.AddToLayer(border);
-            layer.AddToLayer(ent);
-            SceneManager.Get.RegisterScene(newScene);
-            ent.Move(new HE_Vec2(300f, 20f));
-
-            Renderer.Get.Render();
-            sm_RenderWindow.Display();
+            m_RenderWindow.Display();
         }
 
         private void OnResize(object? sender, SFW.SizeEventArgs se)
         {
             m_View = new SFG.View(new SFG.FloatRect(0, 0, se.Width, se.Height));
-            sm_RenderWindow.SetView(m_View);
+            m_RenderWindow.SetView(m_View);
         }
 
         private void SubscribeEventHandlers()
         {
-            sm_RenderWindow.Closed += (object? s, EventArgs e) => Close();
-            sm_RenderWindow.Resized += OnResize;
-            sm_RenderWindow.KeyPressed += m_GameManager.InputController.HandleKbInput;
-            sm_RenderWindow.MouseButtonPressed += m_GameManager.InputController.HandleMousePressedEvent;
-            sm_RenderWindow.MouseButtonReleased += m_GameManager.InputController.HandleMouseReleasedEvent;
-            sm_RenderWindow.MouseMoved += m_GameManager.InputController.HandleMouseMovedEvent;
+            m_RenderWindow.Closed += (object? s, EventArgs e) => Close();
+            m_RenderWindow.Resized += OnResize;
+            m_RenderWindow.KeyPressed += InputController.Get.HandleKeyPress;
+            m_RenderWindow.KeyReleased += InputController.Get.HandleKeyRelease;
+            m_RenderWindow.MouseButtonPressed += InputController.Get.HandleMousePressedEvent;
+            m_RenderWindow.MouseButtonReleased += InputController.Get.HandleMouseReleasedEvent;
+            m_RenderWindow.MouseMoved += InputController.Get.HandleMouseMovedEvent;
             // m_InputCtrl.MovementEvent += (object? s, HE_MovementEventArgs e) => { Console.WriteLine($"Movement: {e.Action}"); };
         }
 
 
-        public bool IsOpen => sm_RenderWindow.IsOpen;
-        public static SFG.RenderWindow ActiveWindow => sm_RenderWindow;
-        public static float GetTick => m_Tick;
+        public bool IsOpen => m_RenderWindow.IsOpen;
+        //public static SFG.RenderWindow ActiveWindow => m_RenderWindow;
+        //public static float GetTick => m_Tick;
+        public HE_RenderWindow RenderWindow => m_RenderWindow;
 
-        private readonly GameManager m_GameManager;
+        private readonly InputController m_InputCtrl;
         private WindowSpecification m_WinSpec;
-        private static SFG.RenderWindow sm_RenderWindow = null!;
+        private SFG.RenderWindow m_RenderWindow = null!;
         private SFG.View m_View;
-        private HE_Clock m_Clock;
-        private static float m_Tick = 0f;
+        //private HE_Clock m_Clock;
+        //private static float m_Tick = 0f;
         //private readonly InputController m_InputCtrl;
     }
 }

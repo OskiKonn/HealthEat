@@ -2,6 +2,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -10,145 +12,125 @@ using SFS = SFML.System;
 
 namespace HealthEat
 {
-    internal class Entity : SpriteObject
+    internal interface IReadOnlyEntity
+    {
+        HE_RenderObjectType GetObjectType { get; }
+        HE_Vec2 GetVelocity { get; }
+        uint GetIndex { get; }
+        HE_EntityType GetEntityType { get; }
+        bool IsTouchable { get; }
+        bool IsClickable { get; }
+        bool IsInteractable { get; }
+        string Name { get; }
+        HE_Vec2 Position { get; }
+        void OnInteraction() { }
+        void OnClick() { }
+
+        void SetDebugMode(bool value) { }
+    }
+
+
+    internal interface ICollider
+    {
+        HE_FloatRect Body { get; }
+        bool IsKinematic { get; }
+        bool IsTrigger { get; }
+
+        void OnCollision(ICollider other);
+    }
+
+
+    internal interface IKinematic : ICollider
+    {
+        HE_Vec2 Velocity { get; set; }
+        float Acceleration { get; set; }
+
+        void Move(HE_Vec2 offset);
+        void Push(HE_Vec2 offset);
+    }
+
+
+    internal interface IInteractable
+    {
+        HE_Vec2 Position { get; }
+        float InteractRange { get; }
+        bool CanInteract { get; }
+        string InteractPrompt { get; }
+
+        void OnInteraction(Entity interactor);
+    }
+
+
+    internal interface IClickable
+    {
+        HE_FloatRect ClickBounds { get; }
+
+        void OnClick();
+        void OnMouseEnter();
+        void OnMouseLeave();
+    }
+
+
+    internal abstract class Entity : SpriteObject, IReadOnlyEntity
     {
         
-        public Entity(string name) : this(new HE_Vec2(0.0f, 0.0f), name)
+        public Entity(string name, string texture) : this(new HE_Vec2(0.0f, 0.0f), name, texture)
         {
             Console.WriteLine($"[Entity]: Created entity {name}");
         }
 
 
-        public Entity(HE_Vec2 position, string name, float scale = 1.0f, bool touchable = false, bool interactable = false, bool clickable = false) : this(position, name, new HE_Vec2(scale, scale), interactable, clickable) { }
-        public Entity(HE_Vec2 position, string name, string texture, float scale = 1.0f, bool touchable = false, bool interactable = false, bool clickable = false) :
-            this(position, name, texture, new HE_Vec2(scale, scale), interactable) { }
-
-
-        public Entity(HE_Vec2 position, string name, HE_Vec2 scale, bool touchable = false, bool interactable = false, bool clickable = false) : base(name)
+        public Entity(HE_Vec2 position, string name, string texture, float scale = 1.0f, bool touchable = false, bool interactable = false, bool clickable = false)
+            : base(position, texture, name, scale)
         {
-            if (!ValidateArguments(position, scale))
-                throw new HE_InvalidArgumentValueException("[HE_Exception]: Invalid constructor argument");
 
-            m_Context.Position = position;
             m_Name = "Entity_" + name;
-            m_Context.Scale = scale;
-            Touchable = touchable;
+            CanTouch = touchable;
             Interactable = interactable;
             Clickable = clickable;
             m_Index = AssignEntityIndex();
 
-            m_Bounds = m_Context.GetGlobalBounds();
-            m_Border = new RectangleShapeObject(new HE_Vec2(m_Bounds.Width, m_Bounds.Height), $"{m_Name}_border");
-            m_Border.Context.FillColor = HE_Color.Transparent;
-            m_Border.Context.OutlineColor = HE_Color.Transparent;
-            m_Border.Context.OutlineThickness = 2.0f;
-            m_Border.Context.Position = new HE_Vec2(m_Bounds.Left, m_Bounds.Top);
-
             Console.WriteLine($"[Entity]: Created entity {name}");
         }
 
 
-        public Entity(HE_Vec2 position, string name, string texture, HE_Vec2 scale, bool touchable = false, bool interactable = false, bool clickable = false) : base(texture, name)
+        public virtual void Update()
         {
-            if (!ValidateArguments(position, scale))
-                throw new HE_InvalidArgumentValueException("[HE_Exception]: Invalid constructor argument");
-
-            m_Context.Position = position;
-            m_Name = "Entity_" + name;
-            m_Context.Scale = scale;
-            Touchable = touchable;
-            Interactable = interactable;
-            Clickable = clickable;
-            m_Index = AssignEntityIndex();
-
-            m_Bounds = m_Context.GetGlobalBounds();
-            m_Border = new RectangleShapeObject(new HE_Vec2(m_Bounds.Width, m_Bounds.Height), $"{m_Name}_border");
-            m_Border.Context.FillColor = HE_Color.Transparent;
-            m_Border.Context.OutlineColor = HE_Color.Transparent;
-            m_Border.Context.OutlineThickness = 2.0f;
-            m_Border.Context.Position = new HE_Vec2(m_Bounds.Left, m_Bounds.Top);
-
-            Console.WriteLine($"[Entity]: Created entity {name}");
+            m_OnUpdateAction?.Invoke();
         }
 
 
-        public virtual void Move(HE_Vec2 offset)
+        //public bool Intersects(HE_FloatRect rect)
+        //{
+        //    return m_Bounds.Intersects(rect);
+        //}
+
+
+        public virtual void OnInteraction()
         {
-            m_Context.Position += offset;
-            m_Border.Context.Position = m_Context.Position;
-            m_Bounds = m_Context.GetGlobalBounds();
-        }
-
-
-        public virtual void Move(float offsetX, float offsetY)
-        {
-            m_Context.Position += new HE_Vec2(offsetX, offsetY);
-            m_Border.Context.Position = m_Context.Position;
-            m_Bounds = m_Context.GetGlobalBounds();
-        }
-
-
-        public virtual void Move(HE_Vec2 offset, float dt)
-        {
-            m_Context.Position += offset * m_Velocity * dt;
-            m_Border.Context.Position = m_Context.Position;
-            m_Bounds = m_Context.GetGlobalBounds();
-        }
-
-
-        public virtual void Move(float offsetX, float offsetY, float dt)
-        {
-            m_Context.Position += new HE_Vec2(offsetX, offsetY) * m_Velocity * dt;
-            m_Border.Context.Position = m_Context.Position;
-            m_Bounds = m_Context.GetGlobalBounds();
-        }
-
-
-        public void SetDebugMode(bool val, Scene scene)
-        {
-
-            if (val && m_DebugMode == false)
-            {
-                m_Border.Context.OutlineColor = HE_Color.Green;
-                scene.AddToScene(m_Border);
-                m_DebugMode = val;
-            }
-            else if (!val && m_DebugMode == true)
-            {
-                m_Border.Context.OutlineColor = HE_Color.Transparent;
-                scene.RemoveFromScene(m_Border);
-                m_DebugMode = val;
-            }
-
-            //m_Border.Context.OutlineColor = val ? HE_Color.Green : HE_Color.Transparent;
-            //m_DebugMode = val;
-            //Console.WriteLine($"SAASD - {m_Border.Context.Position.X} | {m_Border.Context.Position.Y}");
-        }
-
-
-        public bool Intersects(Entity ent)
-        {
-            return m_Bounds.Intersects(ent.Bounds);
-        }
-
-
-        public bool Intersects(HE_FloatRect rect)
-        {
-            return m_Bounds.Intersects(rect);
-        }
-
-
-        public virtual void InteractCallback(HE_InteractInfo info)
-        {
-            #if DEBUG
+            #if HE_DEBUG
             Console.WriteLine($"[Entity_{m_Name}]: Entity interacted");
             #endif
         }
 
 
-        public virtual void ClickCallback(HE_ClickInfo info)
+        public void SetOnUpdateAction(Action action)
         {
-            #if DEBUG
+            m_OnUpdateAction += action;
+        }
+
+
+        public void SetOnClickAction(Action action)
+        {
+            m_OnClickAction += action;
+        }
+
+
+        public virtual void OnClick()
+        {
+
+            m_OnClickAction?.Invoke();
+            #if HE_DEBUG
             Console.WriteLine($"[Entity_{m_Name}]: Entity clicked");
             #endif
         }
@@ -159,36 +141,212 @@ namespace HealthEat
             return sm_NextIndex++;
         }
 
-
-        private static bool ValidateArguments(HE_Vec2 pos, HE_Vec2? scale)
+        private void FirePropertyChangedEvent(HE_EntityProperty p, bool v)
         {
-            if (pos.X < 0.0f || pos.Y < 0.0f)
-                return false;
-
-            if (scale != null && scale.Value.X <= 0.0f)
-                return false;
-
-            return true;
+            HE_EventBus.Get.BroadcastEvent(new HE_PropertyChangedEvent(this, p, v));
         }
 
 
-        public bool CanTouch => Touchable;
-        public float Velocity { get => m_Velocity; set { if (value > 0.0f) m_Velocity = value; } }
-        public HE_Sprite Body => m_Context;
-        public HE_FloatRect Bounds => m_Bounds;
-        public HE_Vec2 Position => m_Context.Position;
-        public bool Touchable { get; set; }
-        public bool Interactable { get; set; }
-        public bool Clickable { get; set; }
+        public bool CanTouch
+        {
+            get => m_CanTouch;
+            set { m_CanTouch = value; FirePropertyChangedEvent(HE_EntityProperty.Touchable, value); }
+        }
 
-        protected HE_Vec2 m_Position;
-        protected HE_FloatRect m_Bounds;
-        protected RectangleShapeObject m_Border;
-        protected float m_Velocity = 1.0f;
+        public bool Interactable
+        {
+            get => m_Interactable;
+            set { m_Interactable = value; FirePropertyChangedEvent(HE_EntityProperty.Interactable, value); }
+        }
+
+        public bool Clickable
+        {
+            get => m_Clickable;
+            set { m_Clickable = value; FirePropertyChangedEvent(HE_EntityProperty.Clickable, value); }
+        }
+
+
+        public override HE_RenderObjectType ObjectType => HE_RenderObjectType.Entity;
+        public HE_Vec2 Velocity { get => m_Velocity; set { if (value.X >= 0.0f && value.Y >= 0.0f) m_Velocity = value; } }
+        public uint Index => m_Index;
+        public virtual HE_EntityType EntityType => HE_EntityType.Entity;
+
+        // IReadOnlyEntity
+        public HE_RenderObjectType GetObjectType => ObjectType;
+        public HE_Vec2 GetVelocity => m_Velocity;
+        public uint GetIndex => m_Index;
+        public HE_EntityType GetEntityType => EntityType;
+        public bool IsTouchable => m_CanTouch;
+        public bool IsClickable => m_Clickable;
+        public bool IsInteractable => m_Interactable;
+
+        protected HE_Vec2 m_Velocity = new HE_Vec2(0f, 0f);
+
+        protected Action? m_OnUpdateAction;
+        protected Action? m_OnClickAction;
+        protected bool m_CanTouch = false;
+        protected bool m_Interactable = false;
+        protected bool m_Clickable = false;
+        protected bool m_CanInteract = false;
+        protected float m_InteractRange = 1f;
+        protected string m_InteractPrompt = "";
         private readonly uint m_Index;
-        private readonly string m_Name = "Entity_-1";
-        private bool m_DebugMode = false;
-
         private static uint sm_NextIndex = 0;
+
+    }
+
+
+    internal class StaticEntity : Entity, ICollider, IInteractable, IClickable
+    {
+        public StaticEntity(HE_Vec2 position, string name, string texture, float scale = 1, bool interactable = false, bool clickable = false)
+            : base(position, name, texture, scale, true, interactable, clickable)
+        {
+            m_InteractRange = Math.Max(m_Bounds.Height, m_Bounds.Width) / 2.0f + 5.0f;
+
+        }
+
+        public void SetOnCollisionAction(Action<ICollider> action)
+        {
+            m_OnCollisionAction += action;
+        }
+
+        public void SetOnInteractionAction(Action<Entity> action)
+        {
+            m_OnInteractionAction += action;
+        }
+
+        public virtual void OnInteraction(Entity interactor)
+        {
+            m_OnInteractionAction?.Invoke(interactor);
+        }
+
+        public virtual void OnMouseEnter()
+        {
+
+        }
+
+        public virtual void OnMouseLeave()
+        {
+
+        }
+
+        public virtual void OnCollision(ICollider other)
+        {
+            m_OnCollisionAction?.Invoke(other);
+        }
+
+
+        public float InteractRange => m_InteractRange;
+        public bool CanInteract { get => m_CanInteract; set => m_CanInteract = value; }
+        public string InteractPrompt => m_InteractPrompt;
+
+        public HE_FloatRect ClickBounds => m_Bounds;
+
+        public bool IsKinematic => false;
+        public bool IsTrigger { get; private set; }
+
+        private event Action<ICollider>? m_OnCollisionAction;
+        private event Action<Entity>? m_OnInteractionAction;
+
+    }
+
+
+    internal class KinematicEntity : Entity, IKinematic
+    {
+        public KinematicEntity(HE_Vec2 position, string name, string texture, float scale = 1)
+            : base(position, name, texture, scale, true, false, false)
+        {
+            m_CanTouch = true;
+            Acceleration = 1f;
+        }
+
+        public void SetOnCollisionAction(Action<ICollider> action)
+        {
+            m_OnCollisionAction += action;
+        }
+
+        public virtual void OnCollision(ICollider other)
+        {
+            m_OnCollisionAction?.Invoke(other);
+        }
+
+        public virtual void Push(HE_Vec2 offset)
+        {
+            m_Context.Position += offset;
+            m_Border.Context.Position = m_Context.Position;
+            m_Bounds = m_Context.GetGlobalBounds();
+        }
+
+        public virtual void Move(HE_Vec2 offset)
+        {
+            Push(offset * Acceleration);
+        }
+
+
+        public virtual void Move(HE_Vec2 offset, float dt)
+        {
+            Move(offset * dt);
+        }
+
+
+        public virtual void Move(float offsetX, float offsetY)
+        {
+            Move(new HE_Vec2(offsetX, offsetY));
+        }
+
+
+        public virtual void Move(float offsetX, float offsetY, float dt)
+        {
+            Move(new HE_Vec2(offsetX, offsetY) * dt);
+        }
+
+        public float Acceleration { get; set; }
+        public bool IsKinematic => true;
+        public bool IsTrigger => false;
+
+        protected float m_MoveSpeed = 150f;
+
+        private event Action<ICollider>? m_OnCollisionAction;
+
+    }
+
+
+    //internal class HE_EntityPropertyChangedEventArgs : EventArgs
+    //{
+
+    //    public HE_EntityPropertyChangedEventArgs(Entity caller, HE_EntityProperty property, bool value)
+    //    {
+    //        Caller = caller;
+    //        Property = property;
+    //        Value = value;
+    //    }
+
+    //    public Entity Caller { get; }
+    //    public HE_EntityProperty Property { get; }
+    //    public bool Value { get; }
+
+    //}
+
+
+    internal readonly struct HE_PropertyChangedEvent(Entity ent, HE_EntityProperty property, bool value) : IHE_EventType
+    {
+        public Entity Entity { get; } = ent;
+        public HE_EntityProperty Property { get; } = property;
+        public bool Value { get; } = value;
+    }
+
+
+    internal enum HE_EntityProperty
+    {
+        Touchable = 1,
+        Interactable = 2,
+        Clickable = 3,
+    }
+
+
+    internal enum HE_EntityType : byte
+    {
+        Player = 0,
+        Entity,
     }
 }

@@ -8,105 +8,40 @@ using HealthEat.Exceptions;
 
 namespace HealthEat
 {
-    internal class Player : Entity
+    internal class Player : KinematicEntity
     {
 
-        public Player() : base(new HE_Vec2(50f, 50f), "Player", "star.png", 1, true, true)
+        public Player() : base(new HE_Vec2(50f, 50f), "Player", "star.png", 1)
         {
-            m_Velocity = 100f;
+            //m_Velocity = 180f;
+            //Acceleration = 200f;
+            m_MoveSpeed = 160f;
 
-            #if DEBUG
+            #if HE_DEBUG
             Console.WriteLine($"[Player]: Created player");
             #endif
         }
 
-
-        public void MovePlayer(HE_MovementEventArgs ma)
+        public override void Update()
         {
-            float tick = ma.Tick;
+            Velocity = new HE_Vec2(0f, 0f);
 
-            switch (ma.Action)
-            {
-                case HE_MovementFlags.Jump:
-                    m_MakeJump = m_MakeJump ? m_MakeJump : true;
-                    if (m_MakeJump) Jump(tick);
-                    break;
+            if (InputController.Get.IsActionHeld(HE_Action.MoveUp))
+                m_Velocity.Y -= m_MoveSpeed;
 
-                case HE_MovementFlags.MoveUp:
-                    MoveUp(tick);
-                    break;
+            if (InputController.Get.IsActionHeld(HE_Action.MoveDown))
+                m_Velocity.Y += m_MoveSpeed;
 
-                case HE_MovementFlags.MoveDown:
-                    MoveDown(tick);
-                    break;
+            if (InputController.Get.IsActionHeld(HE_Action.MoveLeft))
+                m_Velocity.X -= m_MoveSpeed;
 
-                case HE_MovementFlags.MoveLeft:
-                    MoveLeft(tick);
-                    break;
-
-                case HE_MovementFlags.MoveRight:
-                    MoveRight(tick);
-                    break;
-            }
-        }
-
-
-        public void Jump(float dt)
-        {
-
-            if (m_JumpedDistance < m_JumpHeight && !m_JumpPeak)
-            {
-                m_IsGrounded = false;
-                Move(0, -1, dt);
-                m_JumpedDistance++;
-                return;
-            }
-            else if (m_JumpedDistance == m_JumpHeight)
-            {
-                m_JumpPeak = true;
-            }
-            else if (m_JumpPeak && m_JumpedDistance > 0)
-            {
-                Move(0, 1, dt);
-                m_JumpedDistance--;
-            }
-            else if (m_JumpPeak && m_JumpedDistance == 0)
-            {
-                m_JumpPeak = false;
-                m_MakeJump = false;
-                m_IsGrounded = true;
-            }
+            if (InputController.Get.IsActionHeld(HE_Action.MoveRight))
+                m_Velocity.X += m_MoveSpeed;
 
         }
 
 
-        public void MoveLeft(float dt)
-        {
-            Move(-1, 0, dt);
-        }
-
-
-        public void MoveRight(float dt)
-        {
-            Move(1, 0, dt);
-        }
-
-
-        public void MoveUp(float dt)
-        {
-            if (!m_IsGrounded) return;
-            Move(0, -1, dt);
-        }
-
-
-        public void MoveDown(float dt)
-        {
-            if (!m_IsGrounded) return;
-            Move(0, 1, dt);
-        }
-
-
-        public void SetHealth(uint hp)
+        public void SetHealth(int hp)
         {
             if (hp > 100u)
                 throw new HE_InvalidArgumentValueException($"[Player]: Maximum health overflow");
@@ -115,63 +50,60 @@ namespace HealthEat
         }
 
 
-        public void AddHealth(uint val)
+        public void UpdateHealth(int val)
         {
-            uint hp = m_PlayerStats.Health + val;
+            int hp = m_PlayerStats.Health + val;
 
-            if (hp > 100u)
-                hp = 100u;
+            if (hp > 100 || hp < 0)
+                hp = 100;
 
             SetHealth(hp);
         }
 
 
-        public void SetScore(uint score)
+        public void SetScore(int score)
         {
             m_PlayerStats.Score = score;
         }
 
 
-        public void AddScore(uint val)
+        public void UpdateScore(int val)
         {
             SetScore(m_PlayerStats.Score + val);
         }
 
 
-        public void AddEnergy(uint val)
+        public void UpdateEnergy(int val)
         {
-            uint eng = m_PlayerStats.Energy + val;
+            int eng = m_PlayerStats.Energy + val;
 
-            if (eng > 100u)
-                eng = 100u;
+            if (eng > 100 || eng < 0)
+                eng = 100;
 
             SetEnergy(eng);
         }
 
 
-        public void SetEnergy(uint energy)
+        public void SetEnergy(int energy)
         {
-            if (energy > 100u)
+            if (energy > 100 || energy < 0)
                 throw new HE_InvalidArgumentValueException($"[Player]: Maximum energy overflow");
 
             m_PlayerStats.Energy = energy;
         }
 
         public PlayerData Data => m_PlayerStats;
+        public override HE_EntityType EntityType => HE_EntityType.Player;
+        //public HE_FloatRect Body => Body;
 
         private PlayerData m_PlayerStats;
-        private bool m_IsGrounded = true;
-        private bool m_MakeJump = false;
-        private bool m_JumpPeak = false;
-        private int m_JumpedDistance = 0;
-        private int m_JumpHeight = 10;
     }
 
 
     internal struct PlayerData
     {
-        public uint Health;
-        public uint Score;
-        public uint Energy;
+        public int Health;
+        public int Score;
+        public int Energy;
     }
 }

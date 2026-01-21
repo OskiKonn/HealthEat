@@ -14,7 +14,7 @@ namespace HealthEat
 
         public ResourceManager()
         {
-            #if DEBUG
+            #if HE_DEBUG
             Console.WriteLine("[ResourceManager]: ResourceManager created!");
             #endif
 
@@ -56,7 +56,7 @@ namespace HealthEat
 
             } catch (LoadingFailedException e)
             {
-                #if DEBUG
+                #if HE_DEBUG
                 Console.WriteLine("[ResourceManager]: Failed to load asset from TryLoadTextureFromFile method: " + e.Message);
                 #endif
                 return false;
@@ -87,13 +87,13 @@ namespace HealthEat
                 HE_Texture txt = new HE_Texture(name);
                 m_Textures.Add(name, txt);
 
-                #if DEBUG
+                #if HE_DEBUG
                 Console.WriteLine($"[ResourceManager]: Loaded asset - {name}");
                 #endif
             }
             catch (LoadingFailedException e)
             {
-                #if DEBUG
+                #if HE_DEBUG
                 Console.WriteLine($"[ResourceManager]: Failed loading asset {name} ({e.Message})");
                 #endif
             }

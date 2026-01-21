@@ -9,13 +9,20 @@
     <DocumentationFile>C:\Users\Oskar\Studia\JPWP\HealthEat\docs.xml</DocumentationFile>
   </PropertyGroup>
 
+	<PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+		<DefineConstants>$(DefineConstants);HE_DEBUG</DefineConstants>
+	</PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="SFML.Net" Version="2.6.0" />
   </ItemGroup>
 	<ItemGroup>
-		<Content Include="F:\MojeProjekty\HealthEat\HealthEat\resources\**\*">
+		<Content Include="C:\Users\Oskar\Studia\JPWP\HealthEat\HealthEat\resources\**\*">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</Content>
+	</ItemGroup>
+	<ItemGroup>
+	  <Compile Remove="source\PlayerController.cs" />
 	</ItemGroup>
 
 </Project>
