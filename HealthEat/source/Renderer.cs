@@ -8,42 +8,42 @@ using SFG = SFML.Graphics;
 using SFS = SFML.System;
 using SFW = SFML.Window;
 
-namespace HealthEat.Rendering
+using HealthEat.Exceptions;
+
+namespace HealthEat
 {
     internal class Renderer
     {
 
         private static readonly Lazy<Renderer> s_Instance = new Lazy<Renderer>(() => new Renderer(), false);
-
         private Renderer() { }
 
-        public void Render()
+
+        public void Render(List<Scene> sceneList)
         {
-            foreach (IRenderable obj in m_RenderObjects)
-            {
-                Window.ActiveWindow.Draw(obj.DrawingContext);
-                Console.WriteLine("Name: " + obj.Name + ", Id: " + obj.ID);
-            }
+
+
+            //if (SceneToRender == null)
+            //{
+            //    throw new HE_LogicException("[Renderer]: There is no active scene", HE_ExceptionType.Critical);
+            //}
+
+            //foreach (SceneLayer layer in SceneToRender.LayerStack)
+            //{
+            //    foreach(IRenderable obj in layer.LayerObjects)
+            //    {
+            //        if (obj.Visible)
+            //            Window.ActiveWindow.Draw(obj.DrawingContext);
+            //    }
+            //}
+
+
         }
 
-        public bool AddRenderObject(IRenderable renderObject)
-        {
-            if (!m_RenderObjects.Add(renderObject))
-            {
-
-        #if DEBUG
-                Console.WriteLine($"Failed adding RenderObject {renderObject.Name} to renderer. Make sure to not duplicate object name");
-        #endif
-                return false;
-            }
-
-        #if DEBUG
-            Console.WriteLine("Added test object: { " + renderObject.Name + ", " + renderObject.ID + " }");
-        #endif
-            return true;
-        }
+        
 
         public static Renderer Get => s_Instance.Value;
-        private HashSet<IRenderable> m_RenderObjects = new HashSet<IRenderable>(10);
+        public static Scene? SceneToRender { get; set; }
+        //private HashSet<Scene> m_RenderObjects = new HashSet<IRenderable>(10);
     }
 }

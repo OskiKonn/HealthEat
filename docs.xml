@@ -1,0 +1,1258 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>HealthEat</name>
+    </assembly>
+    <members>
+        <member name="T:HealthEat.GameLevel">
+            <summary>
+            Base class for game levels that use scene management.
+            </summary>
+        </member>
+        <member name="M:HealthEat.GameLevel.#ctor(System.String,HealthEat.LevelSupervisor)">
+            <summary>
+            Initializes a new GameLevel with the specified name and supervisor.
+            </summary>
+            <param name="name">The name identifier for this level.</param>
+            <param name="supervisor">The level supervisor managing this level.</param>
+        </member>
+        <member name="T:HealthEat.MenuLevel">
+            <summary>
+            Main menu level displaying start and exit buttons.
+            </summary>
+        </member>
+        <member name="M:HealthEat.MenuLevel.#ctor(HealthEat.LevelSupervisor)">
+            <summary>
+            Initializes a new MenuLevel.
+            </summary>
+            <param name="supervisor">The level supervisor managing this level.</param>
+        </member>
+        <member name="T:HealthEat.HouseLevel">
+            <summary>
+            Main house level where the player can interact with various objects.
+            Contains kitchen table, TV, and doors for accessing other levels.
+            </summary>
+        </member>
+        <member name="M:HealthEat.HouseLevel.#ctor(HealthEat.LevelSupervisor)">
+            <summary>
+            Initializes a new HouseLevel.
+            </summary>
+            <param name="sv">The level supervisor managing this level.</param>
+        </member>
+        <member name="T:HealthEat.KitchenLevel">
+            <summary>
+            Kitchen level where players can click on food items.
+            Healthy foods increase health and energy, unhealthy foods decrease them.
+            </summary>
+        </member>
+        <member name="M:HealthEat.KitchenLevel.#ctor(HealthEat.LevelSupervisor)">
+            <summary>
+            Kitchen level where players can click on food items.
+            Healthy foods increase health and energy, unhealthy foods decrease them.
+            </summary>
+        </member>
+        <member name="M:HealthEat.KitchenLevel.Load">
+            <summary>
+            Loads the kitchen level with food items and popup system.
+            </summary>
+        </member>
+        <member name="M:HealthEat.KitchenLevel.LoadBack">
+            <summary>
+            Returns to the house level after completing the kitchen interaction.
+            </summary>
+        </member>
+        <member name="T:HealthEat.TVLevel">
+            <summary>
+            TV level where watching TV decreases health but adds a bit of energy.
+            </summary>
+        </member>
+        <member name="M:HealthEat.TVLevel.#ctor(HealthEat.LevelSupervisor)">
+            <summary>
+            Initializes a new TVLevel.
+            </summary>
+            <param name="sv">The level supervisor managing this level.</param>
+        </member>
+        <member name="M:HealthEat.TVLevel.Load">
+            <summary>
+            Loads the TV level and applies health penalty and energy bonus.
+            </summary>
+        </member>
+        <member name="M:HealthEat.TVLevel.Update(System.Single)">
+            <summary>
+            Updates the TV level, popup system, and handles automatic return to house.
+            </summary>
+            <param name="dt">Delta time in seconds since last frame.</param>
+        </member>
+        <member name="M:HealthEat.TVLevel.LoadBack">
+            <summary>
+            Returns to the house level after completing the TV interaction.
+            </summary>
+        </member>
+        <member name="T:HealthEat.RunningLevel">
+            <summary>
+            Running level where going for a run decreases energy but significantly increases health.
+            </summary>
+        </member>
+        <member name="M:HealthEat.RunningLevel.#ctor(HealthEat.LevelSupervisor)">
+            <summary>
+            Initializes a new RunningLevel.
+            </summary>
+            <param name="sv">The level supervisor managing this level.</param>
+        </member>
+        <member name="M:HealthEat.RunningLevel.Load">
+            <summary>
+            Loads the running level and applies energy/health changes.
+            </summary>
+        </member>
+        <member name="T:HealthEat.HUDLayer">
+            <summary>
+            Specialized scene layer for displaying the HUD (Heads-Up Display).
+            Shows player health, energy, and score.
+            </summary>
+        </member>
+        <member name="M:HealthEat.HUDLayer.#ctor(HealthEat.SceneManager)">
+            <summary>
+            Initializes a new HUDLayer and subscribes to player data change events.
+            </summary>
+            <param name="manager">The scene manager (unused, kept for compatibility).</param>
+        </member>
+        <member name="M:HealthEat.HUDLayer.LoadHUD(HealthEat.Scene)">
+            <summary>
+            Loads HUD elements (health, energy, score displays) into the scene.
+            </summary>
+            <param name="sc">The scene to add HUD elements to.</param>
+        </member>
+        <member name="M:HealthEat.HUDLayer.OnPlayerDataChanged(HealthEat.HE_PlayerDataChangedEvent)">
+            <summary>
+            Handles player data change events and updates HUD displays.
+            </summary>
+            <param name="e">The player data changed event containing updated stats.</param>
+        </member>
+        <member name="T:HealthEat.GameManager">
+            <summary>
+            Main game manager class that coordinates all game systems.
+            Handles window creation, input, level management, and the main game loop.
+            </summary>
+        </member>
+        <member name="M:HealthEat.GameManager.#ctor">
+            <summary>
+            Initializes the GameManager with input controller, window, and level supervisor.
+            </summary>
+        </member>
+        <member name="M:HealthEat.GameManager.Run">
+            <summary>
+            Runs the main game loop. Handles events, updates game state, and renders frames.
+            </summary>
+        </member>
+        <member name="M:HealthEat.GameManager.Quit(HealthEat.HE_ExitEvent)">
+            <summary>
+            Handles the quit event. Closes the current level and game window.
+            </summary>
+            <param name="ev">The exit event that triggered this method.</param>
+        </member>
+        <member name="P:HealthEat.GameManager.InputController">
+            <summary>
+            Gets the input controller instance.
+            </summary>
+        </member>
+        <member name="P:HealthEat.GameManager.GetTick">
+            <summary>
+            Gets the current frame time (delta time) in seconds.
+            </summary>
+        </member>
+        <member name="T:HealthEat.HE_GameSupervisors">
+            <summary>
+            Container structure holding references to game supervisors.
+            </summary>
+        </member>
+        <member name="F:HealthEat.HE_GameSupervisors.GameManager">
+            <summary>
+            Reference to the game manager instance.
+            </summary>
+        </member>
+        <member name="F:HealthEat.HE_GameSupervisors.LevelSupervisor">
+            <summary>
+            Reference to the level supervisor instance.
+            </summary>
+        </member>
+        <member name="T:HealthEat.HE_ExitEvent">
+            <summary>
+            Event type that signals the application should exit.
+            </summary>
+        </member>
+        <member name="M:HealthEat.HE_ExitEvent.#ctor">
+            <summary>
+            Default constructor for exit event.
+            </summary>
+        </member>
+        <member name="T:HealthEat.Vector2Extension">
+            <summary>
+            Extension methods for SFML Vector2f and Vector2i classes.
+            </summary>
+        </member>
+        <member name="M:HealthEat.Vector2Extension.GetLength(SFML.System.Vector2f)">
+            <summary>
+            Calculates and returns the length (magnitude) of a 2D float vector.
+            </summary>
+            <param name="v">The vector instance.</param>
+            <returns>The length of the vector.</returns>
+        </member>
+        <member name="M:HealthEat.Vector2Extension.GetLength(SFML.System.Vector2i)">
+            <summary>
+            Calculates and returns the length (magnitude) of a 2D integer vector.
+            </summary>
+            <param name="v">The vector instance.</param>
+            <returns>The length of the vector.</returns>
+        </member>
+        <member name="T:HealthEat.HE_EventBus">
+            <summary>
+            Central event bus for the game. Manages event registration, subscription, and broadcasting.
+            Implements a singleton pattern.
+            </summary>
+        </member>
+        <member name="M:HealthEat.HE_EventBus.#ctor">
+            <summary>
+            Private constructor for singleton pattern.
+            </summary>
+        </member>
+        <member name="M:HealthEat.HE_EventBus.RegisterEvent``1">
+            <summary>
+            Registers an event type with the event bus.
+            </summary>
+            <typeparam name="TEvent">The event type to register. Must implement IHE_EventType.</typeparam>
+        </member>
+        <member name="M:HealthEat.HE_EventBus.UnregisterEvent``1">
+            <summary>
+            Unregisters an event type from the event bus.
+            </summary>
+            <typeparam name="TEvent">The event type to unregister.</typeparam>
+        </member>
+        <member name="M:HealthEat.HE_EventBus.SubscribeToEvent``1(System.Action{``0})">
+            <summary>
+            Subscribes a handler to an event type.
+            </summary>
+            <typeparam name="TEvent">The event type to subscribe to.</typeparam>
+            <param name="subscriber">The action to invoke when the event is broadcast.</param>
+            <exception cref="T:HealthEat.Exceptions.HE_InvalidArgumentValueException">Thrown when the event type is not registered.</exception>
+        </member>
+        <member name="M:HealthEat.HE_EventBus.SubscribeToEventForce``1(System.Action{``0})">
+            <summary>
+            Subscribes a handler to an event type, registering the event if it doesn't exist.
+            </summary>
+            <typeparam name="TEvent">The event type to subscribe to.</typeparam>
+            <param name="subscriber">The action to invoke when the event is broadcast.</param>
+        </member>
+        <member name="M:HealthEat.HE_EventBus.UnsubscribeFromEvent``1(System.Action{``0})">
+            <summary>
+            Unsubscribes a handler from an event type.
+            </summary>
+            <typeparam name="TEvent">The event type to unsubscribe from.</typeparam>
+            <param name="subscriber">The action to remove from the subscription list.</param>
+        </member>
+        <member name="M:HealthEat.HE_EventBus.BroadcastEvent``1(``0)">
+            <summary>
+            Broadcasts an event to all subscribed handlers.
+            </summary>
+            <typeparam name="TEvent">The event type to broadcast.</typeparam>
+            <param name="data">The event data to broadcast.</param>
+        </member>
+        <member name="M:HealthEat.HE_EventBus.ClearAll">
+            <summary>
+            Clears all event channels and subscriptions.
+            </summary>
+        </member>
+        <member name="P:HealthEat.HE_EventBus.Get">
+            <summary>
+            Gets the singleton instance of the event bus.
+            </summary>
+        </member>
+        <member name="T:HealthEat.IHE_EventType">
+            <summary>
+            Marker interface for all event types in the event bus system.
+            </summary>
+        </member>
+        <member name="T:HealthEat.HE_EventBase">
+            <summary>
+            Base class for event channels in the event bus.
+            </summary>
+        </member>
+        <member name="M:HealthEat.HE_EventBase.Clear">
+            <summary>
+            Clears all subscribers from the event channel.
+            </summary>
+        </member>
+        <member name="T:HealthEat.HE_Event`1">
+            <summary>
+            Generic event channel for a specific event type.
+            </summary>
+            <typeparam name="TEvent">The event type this channel handles.</typeparam>
+        </member>
+        <member name="M:HealthEat.HE_Event`1.Subscribe(System.Action{`0})">
+            <summary>
+            Subscribes a handler to this event channel.
+            </summary>
+            <param name="subscriber">The action to invoke when events are broadcast.</param>
+        </member>
+        <member name="M:HealthEat.HE_Event`1.Unsubscribe(System.Action{`0})">
+            <summary>
+            Unsubscribes a handler from this event channel.
+            </summary>
+            <param name="subscriber">The action to remove from subscriptions.</param>
+        </member>
+        <member name="M:HealthEat.HE_Event`1.Broadcast(`0)">
+            <summary>
+            Broadcasts an event to all subscribed handlers.
+            </summary>
+            <param name="ev">The event data to broadcast.</param>
+        </member>
+        <member name="M:HealthEat.HE_Event`1.Clear">
+            <summary>
+            Clears all subscribers from this event channel.
+            </summary>
+        </member>
+        <member name="T:HealthEat.Exceptions.HE_ExceptionType">
+            <summary>
+            Enum type used to identify the exception kind
+            </summary>
+        </member>
+        <member name="T:HealthEat.Exceptions.HE_Exception">
+            <summary>
+            Base class for HealthEat exceptions. Extends standard Exception class with exception kind
+            </summary>
+        </member>
+        <member name="M:HealthEat.Exceptions.HE_Exception.#ctor(System.String)">
+            <summary>
+            Default constructor. Specifies kind as Soft
+            </summary>
+            <param name="msg">Error message to display</param>
+        </member>
+        <member name="M:HealthEat.Exceptions.HE_Exception.#ctor(System.String,HealthEat.Exceptions.HE_ExceptionType)">
+            <summary>
+            Initializes new exception with specified exception type
+            </summary>
+            <param name="msg">Error message to display</param>
+            <param name="type">Exception type</param>
+        </member>
+        <member name="P:HealthEat.Exceptions.HE_Exception.Type">
+            <summary>
+            Type of exception
+            </summary>
+        </member>
+        <member name="T:HealthEat.Exceptions.HE_AssetLoadException">
+            <summary>
+            Exception thrown when error while loading asset occurs.
+            Exception of kind Critical.
+            </summary>
+        </member>
+        <member name="M:HealthEat.Exceptions.HE_AssetLoadException.#ctor(System.String,System.String)">
+            <summary>
+            Initializes new exceptions with specified message and optionally name of asset that failed to load
+            </summary>
+            <param name="msg">Error message to be displayed</param>
+            <param name="asssetName">Name of asset</param>
+        </member>
+        <member name="T:HealthEat.Exceptions.HE_MissingAssetException">
+            <summary>
+            Exception thrown when application tries to access missing asset
+            </summary>
+        </member>
+        <member name="M:HealthEat.Exceptions.HE_MissingAssetException.#ctor(System.String,System.String)">
+            <summary>
+            Initializes new exception with specified message and optionally name of asset that is missing
+            </summary>
+            <param name="msg">Error message to be displayed</param>
+            <param name="asssetName">Name of asset</param>
+        </member>
+        <member name="T:HealthEat.Exceptions.HE_InvalidArgumentValueException">
+            <summary>
+            Exception thrown when an invalid argument value is provided to a method.
+            Exception of kind Critical.
+            </summary>
+        </member>
+        <member name="M:HealthEat.Exceptions.HE_InvalidArgumentValueException.#ctor(System.String)">
+            <summary>
+            Initializes a new exception with the specified message.
+            </summary>
+            <param name="msg">Error message to be displayed.</param>
+        </member>
+        <member name="T:HealthEat.Exceptions.HE_LogicException">
+            <summary>
+            Exception thrown when a logic error occurs in the application.
+            Can be either Soft or Critical depending on severity.
+            </summary>
+        </member>
+        <member name="M:HealthEat.Exceptions.HE_LogicException.#ctor(System.String,HealthEat.Exceptions.HE_ExceptionType)">
+            <summary>
+            Initializes a new exception with the specified message and type.
+            </summary>
+            <param name="msg">Error message to be displayed.</param>
+            <param name="type">The exception type (Soft or Critical).</param>
+        </member>
+        <member name="T:HealthEat.InputController">
+            <summary>
+            Manages all input from keyboard and mouse.
+            Handles key bindings, action mapping, and input event broadcasting.
+            </summary>
+        </member>
+        <member name="M:HealthEat.InputController.#ctor">
+            <summary>
+            Initializes a new InputController and sets it as the singleton instance.
+            </summary>
+        </member>
+        <member name="M:HealthEat.InputController.UpdateKeyStates">
+            <summary>
+            Updates the current and previous key states. Should be called every frame.
+            </summary>
+        </member>
+        <member name="M:HealthEat.InputController.SetDefaultKeybinds">
+            <summary>
+            Sets the default key bindings for all game actions.
+            </summary>
+        </member>
+        <member name="M:HealthEat.InputController.IsActionHeld(HealthEat.HE_Action)">
+            <summary>
+            Checks if an action is currently being held down.
+            </summary>
+            <param name="action">The action to check.</param>
+            <returns>True if the action is currently held, false otherwise.</returns>
+        </member>
+        <member name="M:HealthEat.InputController.IsActionTriggered(HealthEat.HE_Action)">
+            <summary>
+            Checks if an action was just triggered (pressed this frame but not last frame).
+            </summary>
+            <param name="action">The action to check.</param>
+            <returns>True if the action was just triggered, false otherwise.</returns>
+        </member>
+        <member name="M:HealthEat.InputController.GetMousePos">
+            <summary>
+            Gets the current mouse position in window coordinates.
+            </summary>
+            <returns>The current mouse position as a 2D integer vector.</returns>
+        </member>
+        <member name="M:HealthEat.InputController.HandleKeyPress(System.Object,SFML.Window.KeyEventArgs)">
+            <summary>
+            Handles key press events from the window.
+            </summary>
+            <param name="s">The event sender.</param>
+            <param name="e">The key event arguments.</param>
+        </member>
+        <member name="M:HealthEat.InputController.HandleKeyRelease(System.Object,SFML.Window.KeyEventArgs)">
+            <summary>
+            Handles key release events from the window.
+            </summary>
+            <param name="s">The event sender.</param>
+            <param name="e">The key event arguments.</param>
+        </member>
+        <member name="M:HealthEat.InputController.HandleMousePressedEvent(System.Object,SFML.Window.MouseButtonEventArgs)">
+            <summary>
+            Handles mouse button press events from the window.
+            </summary>
+            <param name="s">The event sender.</param>
+            <param name="e">The mouse button event arguments.</param>
+        </member>
+        <member name="M:HealthEat.InputController.HandleMouseReleasedEvent(System.Object,SFML.Window.MouseButtonEventArgs)">
+            <summary>
+            Handles mouse button release events from the window.
+            </summary>
+            <param name="s">The event sender.</param>
+            <param name="e">The mouse button event arguments.</param>
+        </member>
+        <member name="M:HealthEat.InputController.HandleMouseMovedEvent(System.Object,SFML.Window.MouseMoveEventArgs)">
+            <summary>
+            Handles mouse movement events from the window.
+            </summary>
+            <param name="s">The event sender.</param>
+            <param name="e">The mouse move event arguments.</param>
+        </member>
+        <member name="M:HealthEat.InputController.HandleMouseScrollEvent(System.Object,SFML.Window.MouseWheelScrollEventArgs)">
+            <summary>
+            Handles mouse wheel scroll events from the window.
+            </summary>
+            <param name="s">The event sender.</param>
+            <param name="e">The mouse wheel scroll event arguments.</param>
+        </member>
+        <member name="P:HealthEat.InputController.Get">
+            <summary>
+            Gets the singleton instance of the InputController.
+            </summary>
+        </member>
+        <member name="T:HealthEat.InteractionSupervisor">
+            <summary>
+            Manages entity interactions and clickable objects within a scene.
+            Handles interaction hints, click detection, and interaction range checking.
+            </summary>
+        </member>
+        <member name="M:HealthEat.InteractionSupervisor.#ctor(HealthEat.Scene,HealthEat.Player)">
+            <summary>
+            Initializes a new InteractionSupervisor for the specified scene.
+            </summary>
+            <param name="scene">The scene to manage interactions for.</param>
+            <param name="player">Optional player reference for interaction range checking.</param>
+        </member>
+        <member name="M:HealthEat.InteractionSupervisor.AddInteractable(HealthEat.IInteractable)">
+            <summary>
+            Adds an interactable entity to the interaction supervisor.
+            </summary>
+            <param name="interactable">The interactable entity to add.</param>
+        </member>
+        <member name="M:HealthEat.InteractionSupervisor.RemoveInteractable(HealthEat.IInteractable)">
+            <summary>
+            Removes an interactable entity from the interaction supervisor.
+            </summary>
+            <param name="interactable">The interactable entity to remove.</param>
+        </member>
+        <member name="M:HealthEat.InteractionSupervisor.AddClickable(HealthEat.IClickable)">
+            <summary>
+            Adds a clickable object to the interaction supervisor.
+            </summary>
+            <param name="clickable">The clickable object to add.</param>
+        </member>
+        <member name="M:HealthEat.InteractionSupervisor.RemoveClickable(HealthEat.IClickable)">
+            <summary>
+            Removes a clickable object from the interaction supervisor.
+            </summary>
+            <param name="clickable">The clickable object to remove.</param>
+        </member>
+        <member name="M:HealthEat.InteractionSupervisor.Update">
+            <summary>
+            Updates interaction detection, shows interaction hints, and handles interaction input.
+            </summary>
+        </member>
+        <member name="M:HealthEat.InteractionSupervisor.OnClickEvent(HealthEat.HE_MouseClickedEvent)">
+            <summary>
+            Handles mouse click events and triggers clickable object callbacks.
+            </summary>
+            <param name="e">The mouse clicked event.</param>
+        </member>
+        <member name="M:HealthEat.InteractionSupervisor.OnInteractEvent(HealthEat.Entity)">
+            <summary>
+            Handles interaction events from entities.
+            </summary>
+            <param name="interactor">The entity attempting to interact.</param>
+        </member>
+        <member name="M:HealthEat.InteractionSupervisor.SetPlayerRef(HealthEat.Player)">
+            <summary>
+            Sets the player reference for interaction range checking.
+            </summary>
+            <param name="p">The player entity, or null to clear the reference.</param>
+        </member>
+        <member name="M:HealthEat.InteractionSupervisor.Exit">
+            <summary>
+            Cleans up the interaction supervisor and unsubscribes from events.
+            </summary>
+        </member>
+        <member name="T:HealthEat.Level">
+            <summary>
+            Base class for all game levels. Manages scene creation and lifecycle.
+            </summary>
+        </member>
+        <member name="M:HealthEat.Level.#ctor(System.String,HealthEat.LevelSupervisor,System.Boolean)">
+            <summary>
+            Initializes a new level with the specified name and supervisor.
+            </summary>
+            <param name="name">The name identifier for this level.</param>
+            <param name="supervisor">The level supervisor managing this level.</param>
+            <param name="hasPlayer">Whether this level contains a player entity.</param>
+        </member>
+        <member name="M:HealthEat.Level.Update(System.Single)">
+            <summary>
+            Updates the level's scene manager and handles cleanup if the level is closing.
+            </summary>
+            <param name="dt">Delta time in seconds since last frame.</param>
+        </member>
+        <member name="M:HealthEat.Level.Draw(HealthEat.Window)">
+            <summary>
+            Draws all scenes in the level to the window.
+            </summary>
+            <param name="wnd">The window to draw to.</param>
+        </member>
+        <member name="M:HealthEat.Level.Load">
+            <summary>
+            Virtual method to be overridden by derived classes to load level-specific content.
+            </summary>
+        </member>
+        <member name="M:HealthEat.Level.Close">
+            <summary>
+            Closes the level and cleans up all resources. Destroys all scenes.
+            </summary>
+        </member>
+        <member name="M:HealthEat.Level.Equals(System.Object)">
+            <summary>
+            Determines whether the specified object is equal to this level.
+            </summary>
+            <param name="obj">The object to compare with this level.</param>
+            <returns>True if the object is a level with the same name, otherwise false.</returns>
+        </member>
+        <member name="M:HealthEat.Level.GetHashCode">
+            <summary>
+            Returns a hash code for this level based on its name.
+            </summary>
+            <returns>A hash code for the current level.</returns>
+        </member>
+        <member name="P:HealthEat.Level.Name">
+            <summary>
+            Gets the name of this level.
+            </summary>
+        </member>
+        <member name="P:HealthEat.Level.GetPlayerLevelInfo">
+            <summary>
+            Gets information about the player's position in this level.
+            </summary>
+        </member>
+        <member name="T:HealthEat.HE_PlayerInLevelInfo">
+            <summary>
+            Structure containing information about the player's scene and layer in a level.
+            </summary>
+        </member>
+        <member name="F:HealthEat.HE_PlayerInLevelInfo.Scene">
+            <summary>
+            The scene containing the player.
+            </summary>
+        </member>
+        <member name="F:HealthEat.HE_PlayerInLevelInfo.Layer">
+            <summary>
+            The layer containing the player.
+            </summary>
+        </member>
+        <member name="T:HealthEat.LevelSupervisor">
+            <summary>
+            Manages level loading, switching, and updates.
+            Handles the active level lifecycle and player reference.
+            </summary>
+        </member>
+        <member name="M:HealthEat.LevelSupervisor.#ctor(HealthEat.GameManager)">
+            <summary>
+            Initializes the LevelSupervisor with a reference to the game manager.
+            </summary>
+            <param name="manager">The game manager instance.</param>
+        </member>
+        <member name="M:HealthEat.LevelSupervisor.Update(System.Single)">
+            <summary>
+            Updates the active level and handles level switching.
+            </summary>
+            <param name="dt">Delta time in seconds since last frame.</param>
+        </member>
+        <member name="M:HealthEat.LevelSupervisor.Draw(HealthEat.Window)">
+            <summary>
+            Draws the active level to the window.
+            </summary>
+            <param name="wnd">The window to draw to.</param>
+        </member>
+        <member name="M:HealthEat.LevelSupervisor.LoadLevel(HealthEat.Level)">
+            <summary>
+            Queues a level to be loaded. The level will be loaded on the next update cycle.
+            </summary>
+            <param name="level">The level instance to load.</param>
+        </member>
+        <member name="M:HealthEat.LevelSupervisor.GetLevel(System.String)">
+            <summary>
+            Gets a level by its name from the registered levels.
+            </summary>
+            <param name="name">The name of the level to find.</param>
+            <returns>The level with the specified name, or null if not found.</returns>
+        </member>
+        <member name="M:HealthEat.LevelSupervisor.CloseLevel">
+            <summary>
+            Closes the currently active level and cleans up its resources.
+            </summary>
+            <exception cref="T:HealthEat.Exceptions.HE_LogicException">Thrown when attempting to close a level when none is loaded.</exception>
+        </member>
+        <member name="M:HealthEat.LevelSupervisor.GetPlayer">
+            <summary>
+            Gets the global player instance.
+            </summary>
+            <returns>The player instance.</returns>
+        </member>
+        <member name="P:HealthEat.LevelSupervisor.GetSupervisorManager">
+            <summary>
+            Gets the game manager instance.
+            </summary>
+        </member>
+        <member name="T:HealthEat.PhysicsEngine">
+            <summary>
+            Handles physics simulation including collision detection and resolution.
+            Manages kinematic and static colliders.
+            </summary>
+        </member>
+        <member name="M:HealthEat.PhysicsEngine.#ctor">
+            <summary>
+            Initializes a new PhysicsEngine instance.
+            </summary>
+        </member>
+        <member name="M:HealthEat.PhysicsEngine.Update(System.Single)">
+            <summary>
+            Updates physics simulation by moving kinematic bodies and resolving collisions.
+            </summary>
+            <param name="dt">Delta time in seconds since last frame.</param>
+        </member>
+        <member name="M:HealthEat.PhysicsEngine.Clear">
+            <summary>
+            Clears all registered colliders from the physics engine.
+            </summary>
+        </member>
+        <member name="M:HealthEat.PhysicsEngine.ResolveCollisions">
+            <summary>
+            Resolves collisions between all registered colliders.
+            Handles both kinematic-static and kinematic-kinematic collisions.
+            </summary>
+        </member>
+        <member name="M:HealthEat.PhysicsEngine.AddCollider(HealthEat.ICollider)">
+            <summary>
+            Adds a collider to the physics engine for collision detection.
+            </summary>
+            <param name="item">The collider to add.</param>
+        </member>
+        <member name="M:HealthEat.PhysicsEngine.RemoveCollider(HealthEat.ICollider)">
+            <summary>
+            Removes a collider from the physics engine.
+            </summary>
+            <param name="item">The collider to remove.</param>
+        </member>
+        <member name="T:HealthEat.Player">
+            <summary>
+            Represents the player entity in the game.
+            Handles player movement, health, energy, and score management.
+            </summary>
+        </member>
+        <member name="M:HealthEat.Player.#ctor">
+            <summary>
+            Initializes a new player instance with default position and stats.
+            </summary>
+        </member>
+        <member name="M:HealthEat.Player.SetHealth(System.Int32)">
+            <summary>
+            Sets the player's health to a specific value.
+            </summary>
+            <param name="hp">The health value to set (0-100).</param>
+            <exception cref="T:HealthEat.Exceptions.HE_InvalidArgumentValueException">Thrown when health exceeds maximum value of 100.</exception>
+        </member>
+        <member name="M:HealthEat.Player.UpdateHealth(System.Int32)">
+            <summary>
+            Updates the player's health by adding or subtracting a value.
+            Health is clamped between 0 and 100.
+            </summary>
+            <param name="val">The amount to change health by (positive to increase, negative to decrease).</param>
+        </member>
+        <member name="M:HealthEat.Player.SetScore(System.Int32)">
+            <summary>
+            Sets the player's score to a specific value.
+            </summary>
+            <param name="score">The score value to set.</param>
+        </member>
+        <member name="M:HealthEat.Player.UpdateScore(System.Int32)">
+            <summary>
+            Updates the player's score by adding a value.
+            Score cannot go below 0.
+            </summary>
+            <param name="val">The amount to change score by.</param>
+        </member>
+        <member name="M:HealthEat.Player.UpdateEnergy(System.Int32)">
+            <summary>
+            Updates the player's energy by adding or subtracting a value.
+            Energy is clamped between 0 and 100.
+            </summary>
+            <param name="val">The amount to change energy by (positive to increase, negative to decrease).</param>
+        </member>
+        <member name="M:HealthEat.Player.SetEnergy(System.Int32)">
+            <summary>
+            Sets the player's energy to a specific value.
+            </summary>
+            <param name="energy">The energy value to set (0-100).</param>
+            <exception cref="T:HealthEat.Exceptions.HE_InvalidArgumentValueException">Thrown when energy is outside the valid range of 0-100.</exception>
+        </member>
+        <member name="P:HealthEat.Player.Data">
+            <summary>
+            Gets the current player data (health, energy, score).
+            </summary>
+        </member>
+        <member name="P:HealthEat.Player.EntityType">
+            <summary>
+            Gets the entity type, which is always Player for this class.
+            </summary>
+        </member>
+        <member name="T:HealthEat.PlayerData">
+            <summary>
+            Structure containing the player's current statistics.
+            </summary>
+        </member>
+        <member name="F:HealthEat.PlayerData.Health">
+            <summary>
+            The player's current health (0-100).
+            </summary>
+        </member>
+        <member name="F:HealthEat.PlayerData.Score">
+            <summary>
+            The player's current score.
+            </summary>
+        </member>
+        <member name="F:HealthEat.PlayerData.Energy">
+            <summary>
+            The player's current energy (0-100).
+            </summary>
+        </member>
+        <member name="T:HealthEat.HE_PlayerDataChangedEvent">
+            <summary>
+            Event that is broadcast when player data (health, energy, score) changes.
+            </summary>
+        </member>
+        <member name="M:HealthEat.HE_PlayerDataChangedEvent.#ctor(HealthEat.PlayerData)">
+            <summary>
+            Event that is broadcast when player data (health, energy, score) changes.
+            </summary>
+        </member>
+        <member name="P:HealthEat.HE_PlayerDataChangedEvent.Data">
+            <summary>
+            Gets the updated player data.
+            </summary>
+        </member>
+        <member name="T:HealthEat.PopupSystem">
+            <summary>
+            System for displaying popup messages to the user.
+            Manages popup visibility, timing, and rendering.
+            </summary>
+        </member>
+        <member name="M:HealthEat.PopupSystem.#ctor(HealthEat.Scene,HealthEat.SceneLayer)">
+            <summary>
+            Initializes a new popup system with the specified scene and layer.
+            </summary>
+            <param name="scene">The scene to display popups in.</param>
+            <param name="layer">The layer to render popups on.</param>
+        </member>
+        <member name="M:HealthEat.PopupSystem.ShowPopup(System.String,System.Single)">
+            <summary>
+            Shows a popup message for the specified duration.
+            </summary>
+            <param name="message">The message text to display.</param>
+            <param name="duration">How long the popup should be visible in seconds. Default is 2.0 seconds.</param>
+        </member>
+        <member name="M:HealthEat.PopupSystem.Update(System.Single)">
+            <summary>
+            Updates the popup system. Handles automatic hiding after duration expires.
+            </summary>
+            <param name="dt">Delta time in seconds since last frame.</param>
+        </member>
+        <member name="M:HealthEat.PopupSystem.HidePopup">
+            <summary>
+            Hides the currently visible popup and cleans up resources.
+            </summary>
+        </member>
+        <member name="P:HealthEat.PopupSystem.IsVisible">
+            <summary>
+            Gets whether a popup is currently visible.
+            </summary>
+        </member>
+        <member name="T:HealthEat.Program">
+            <summary>
+            Main entry point for the HealthEat application.
+            Initializes the game window, resource manager, and game manager.
+            </summary>
+        </member>
+        <member name="M:HealthEat.Program.#ctor">
+            <summary>
+            Default constructor for Program class.
+            </summary>
+        </member>
+        <member name="M:HealthEat.Program.Main(System.String[])">
+            <summary>
+            Main entry point of the application.
+            </summary>
+            <param name="args">Command line arguments passed to the program.</param>
+        </member>
+        <member name="M:HealthEat.Program.Run">
+            <summary>
+            Runs the main game loop. Initializes window, resource manager, and game manager.
+            </summary>
+        </member>
+        <member name="T:HealthEat.RenderObject`1">
+            <summary>
+            Base abstract generic class for in-game rendering mechanism. Serves as a base for other classes used in rendering such as TextObject.
+            Creates DrawingContext of type T that is later used for actions on SFML types during rendering
+            </summary>
+            <typeparam name="T">Type of SFML framework type to be used as rendedring context</typeparam>
+        </member>
+        <member name="M:HealthEat.RenderObject`1.GetNextIDStr">
+            <summary>
+            Method used for obtaining id to be assigned to the object in form of string type
+            </summary>
+            <returns>New id of the object as string</returns>
+        </member>
+        <member name="M:HealthEat.RenderObject`1.GetNextID">
+            <summary>
+            Method used for obtaining id to be assigned to the object
+            </summary>
+            <returns>New if of the object</returns>
+        </member>
+        <member name="P:HealthEat.RenderObject`1.Name">
+            <summary>
+            Name of the render object
+            </summary>
+        </member>
+        <member name="P:HealthEat.RenderObject`1.ID">
+            <summary>
+            ID of the rendering object
+            </summary>
+        </member>
+        <member name="P:HealthEat.RenderObject`1.Context">
+            <summary>
+            Drawing context as T type
+            </summary>
+        </member>
+        <member name="P:HealthEat.RenderObject`1.DrawingContext">
+            <summary>
+            Drawing context as SFML Drawable class object
+            </summary>
+        </member>
+        <member name="T:HealthEat.TextObject">
+            <summary>
+            Wrapper for SFML Text class used in rendering process
+            </summary>
+        </member>
+        <member name="T:HealthEat.SpriteObject">
+            <summary>
+            Wrapper for SFML Sprite class used in rendering process
+            </summary>
+        </member>
+        <member name="T:HealthEat.ResourceManager">
+            <summary>
+            Manages loading and retrieval of game resources, primarily textures.
+            Implements a singleton pattern.
+            </summary>
+        </member>
+        <member name="M:HealthEat.ResourceManager.#ctor">
+            <summary>
+            Initializes a new ResourceManager and sets it as the singleton instance.
+            </summary>
+        </member>
+        <member name="M:HealthEat.ResourceManager.GetTexture(System.String)">
+            <summary>
+            Gets loaded texture of name specified by tname.
+            </summary>
+            <param name="tname">Name of texture</param>
+            <returns>Loaded texture</returns>
+            <exception cref="T:HealthEat.Exceptions.HE_MissingAssetException">Throws when texture of specified name is not loaded</exception>
+        </member>
+        <member name="M:HealthEat.ResourceManager.TryLoadTextureFromFile(System.String)">
+            <summary>
+            Attempts to load a texture from a file path.
+            </summary>
+            <param name="file">The file path to load the texture from.</param>
+            <returns>True if the texture was successfully loaded, false otherwise.</returns>
+        </member>
+        <member name="M:HealthEat.ResourceManager.LoadResources">
+            <summary>
+            Loads all texture resources from the resources folder.
+            </summary>
+            <exception cref="T:HealthEat.Exceptions.HE_AssetLoadException">Thrown when the resource folder cannot be found.</exception>
+        </member>
+        <member name="P:HealthEat.ResourceManager.Get">
+            <summary>
+            Gets the singleton instance of the ResourceManager.
+            </summary>
+        </member>
+        <member name="T:HealthEat.Scene">
+            <summary>
+            Represents a scene containing multiple layers of renderable objects.
+            Manages physics, interactions, and rendering of scene content.
+            </summary>
+        </member>
+        <member name="M:HealthEat.Scene.#ctor(HealthEat.SceneManager,System.String)">
+            <summary>
+            Initializes a new scene with the specified manager and name.
+            </summary>
+            <param name="sceneManager">The scene manager managing this scene.</param>
+            <param name="name">The name identifier for this scene. Default is "Unnamed".</param>
+        </member>
+        <member name="M:HealthEat.Scene.Update(System.Single)">
+            <summary>
+            Updates all layers in the scene, physics engine, and interaction supervisor.
+            </summary>
+            <param name="dt">Delta time in seconds since last frame.</param>
+        </member>
+        <member name="M:HealthEat.Scene.Clear">
+            <summary>
+            Clears all layers, physics engine, and interaction supervisor from the scene.
+            </summary>
+        </member>
+        <member name="M:HealthEat.Scene.Draw(HealthEat.Window)">
+            <summary>
+            Draws all layers in the scene to the window.
+            </summary>
+            <param name="wnd">The window to draw to.</param>
+        </member>
+        <member name="M:HealthEat.Scene.PushLayer(HealthEat.SceneLayer)">
+            <summary>
+            Adds a new layer to the top of the layer stack.
+            </summary>
+            <param name="layer">The layer to add.</param>
+        </member>
+        <member name="M:HealthEat.Scene.PopLayer">
+            <summary>
+            Removes the topmost layer from the layer stack.
+            </summary>
+        </member>
+        <member name="M:HealthEat.Scene.AddToLayer(HealthEat.IRenderable,System.String)">
+            <summary>
+            Adds a renderable object to a specific layer by name.
+            </summary>
+            <param name="obj">The renderable object to add.</param>
+            <param name="layerName">The name of the layer to add the object to.</param>
+            <returns>True if the object was successfully added, false otherwise.</returns>
+        </member>
+        <member name="M:HealthEat.Scene.RemoveFromLayer(HealthEat.IRenderable,System.String)">
+            <summary>
+            Removes a renderable object from a specific layer by name.
+            </summary>
+            <param name="obj">The renderable object to remove.</param>
+            <param name="layerName">The name of the layer to remove the object from.</param>
+        </member>
+        <member name="M:HealthEat.Scene.AddToScene(HealthEat.IRenderable,System.Int32)">
+            <summary>
+            Adds a renderable object to a layer by index.
+            </summary>
+            <param name="obj">The renderable object to add.</param>
+            <param name="nLayer">The index of the layer (0 = topmost layer).</param>
+            <returns>True if the object was successfully added, false otherwise.</returns>
+            <exception cref="T:HealthEat.Exceptions.HE_LogicException">Thrown when there are no layers in the scene.</exception>
+            <exception cref="T:HealthEat.Exceptions.HE_InvalidArgumentValueException">Thrown when the layer index is invalid.</exception>
+        </member>
+        <member name="M:HealthEat.Scene.RemoveFromScene(HealthEat.IRenderable,System.Int32)">
+            <summary>
+            Removes a renderable object from a layer by index.
+            </summary>
+            <param name="obj">The renderable object to remove.</param>
+            <param name="nLayer">The index of the layer (0 = topmost layer).</param>
+            <exception cref="T:HealthEat.Exceptions.HE_LogicException">Thrown when there are no layers in the scene.</exception>
+            <exception cref="T:HealthEat.Exceptions.HE_InvalidArgumentValueException">Thrown when the layer index is invalid.</exception>
+        </member>
+        <member name="M:HealthEat.Scene.GetLayerByName(System.String)">
+            <summary>
+            Gets a layer by its name.
+            </summary>
+            <param name="name">The name of the layer to find.</param>
+            <returns>The layer with the specified name, or null if not found.</returns>
+        </member>
+        <member name="P:HealthEat.Scene.Name">
+            <summary>
+            Gets the name of this scene.
+            </summary>
+        </member>
+        <member name="P:HealthEat.Scene.ID">
+            <summary>
+            Gets the unique identifier for this scene.
+            </summary>
+        </member>
+        <member name="P:HealthEat.Scene.LayerStack">
+            <summary>
+            Gets a read-only list of all layers in this scene.
+            </summary>
+        </member>
+        <member name="P:HealthEat.Scene.LayerCount">
+            <summary>
+            Gets the number of layers in this scene.
+            </summary>
+        </member>
+        <member name="T:HealthEat.SceneLayer">
+            <summary>
+            Represents a layer within a scene that contains renderable objects.
+            Manages entities, rendering order, and object lifecycle.
+            </summary>
+        </member>
+        <member name="M:HealthEat.SceneLayer.#ctor(System.String)">
+            <summary>
+            Initializes a new scene layer with the specified name.
+            </summary>
+            <param name="name">The name identifier for this layer.</param>
+        </member>
+        <member name="M:HealthEat.SceneLayer.Update">
+            <summary>
+            Updates all renderable objects in this layer.
+            </summary>
+        </member>
+        <member name="M:HealthEat.SceneLayer.Clear">
+            <summary>
+            Clears all objects and entities from this layer.
+            </summary>
+        </member>
+        <member name="M:HealthEat.SceneLayer.CleanupEntities(System.Action{HealthEat.Entity})">
+            <summary>
+            Removes expired entities from the layer and invokes cleanup action.
+            </summary>
+            <param name="onEntityCleanup">Action to perform when cleaning up an entity.</param>
+        </member>
+        <member name="M:HealthEat.SceneLayer.Draw(HealthEat.Window)">
+            <summary>
+            Draws all visible objects in this layer to the window.
+            </summary>
+            <param name="wnd">The window to draw to.</param>
+        </member>
+        <member name="M:HealthEat.SceneLayer.AddToLayer(HealthEat.IRenderable)">
+            <summary>
+            Adds a renderable object to this layer.
+            </summary>
+            <param name="renderObject">The renderable object to add.</param>
+            <returns>True if the object was successfully added, false otherwise.</returns>
+        </member>
+        <member name="M:HealthEat.SceneLayer.RemoveFromLayer(HealthEat.IRenderable)">
+            <summary>
+            Removes a renderable object from this layer.
+            </summary>
+            <param name="layerObject">The renderable object to remove.</param>
+        </member>
+        <member name="M:HealthEat.SceneLayer.AddEntityToLayer(HealthEat.Entity)">
+            <summary>
+            Adds an entity to this layer and registers it with appropriate systems.
+            </summary>
+            <param name="entity">The entity to add.</param>
+            <returns>True if the entity was successfully added, false otherwise.</returns>
+        </member>
+        <member name="M:HealthEat.SceneLayer.RemoveEntityFromLayer(HealthEat.Entity)">
+            <summary>
+            Removes an entity from this layer and unregisters it from appropriate systems.
+            </summary>
+            <param name="entity">The entity to remove.</param>
+        </member>
+        <member name="M:HealthEat.SceneLayer.GetEntity(System.String)">
+            <summary>
+            Gets an entity by its name from this layer.
+            </summary>
+            <param name="name">The name of the entity to find.</param>
+            <returns>The entity with the specified name, or null if not found.</returns>
+        </member>
+        <member name="T:HealthEat.SceneManager">
+            <summary>
+            Manages multiple scenes, their lifecycle, and active scene selection.
+            </summary>
+        </member>
+        <member name="M:HealthEat.SceneManager.#ctor">
+            <summary>
+            Initializes a new SceneManager instance.
+            </summary>
+        </member>
+        <member name="M:HealthEat.SceneManager.Update(System.Single)">
+            <summary>
+            Updates all registered scenes.
+            </summary>
+            <param name="dt">Delta time in seconds since last frame.</param>
+        </member>
+        <member name="M:HealthEat.SceneManager.Draw(HealthEat.Window)">
+            <summary>
+            Draws all registered scenes to the window.
+            </summary>
+            <param name="wnd">The window to draw to.</param>
+        </member>
+        <member name="M:HealthEat.SceneManager.DestroyScenes">
+            <summary>
+            Destroys all registered scenes and clears the scene list.
+            </summary>
+        </member>
+        <member name="M:HealthEat.SceneManager.UnregisterScene(HealthEat.Scene)">
+            <summary>
+            Unregisters a scene from the scene manager.
+            </summary>
+            <param name="sc">The scene to unregister.</param>
+        </member>
+        <member name="M:HealthEat.SceneManager.RegisterScene(HealthEat.Scene)">
+            <summary>
+            Registers a new scene with the scene manager.
+            </summary>
+            <param name="sc">The scene to register.</param>
+            <returns>True if the scene was successfully registered, false otherwise.</returns>
+        </member>
+        <member name="M:HealthEat.SceneManager.ObtainID">
+            <summary>
+            Obtains a unique ID for a new scene.
+            </summary>
+            <returns>The next available scene ID.</returns>
+        </member>
+        <member name="M:HealthEat.SceneManager.SetActiveScene(HealthEat.Scene)">
+            <summary>
+            Sets the active scene by scene instance.
+            </summary>
+            <param name="s">The scene to set as active.</param>
+        </member>
+        <member name="M:HealthEat.SceneManager.SetActiveScene(System.String)">
+            <summary>
+            Sets the active scene by scene name.
+            </summary>
+            <param name="sname">The name of the scene to set as active.</param>
+        </member>
+        <member name="T:HealthEat.WindowSpecification">
+            <summary>
+            Structure containing window creation parameters.
+            </summary>
+        </member>
+        <member name="F:HealthEat.WindowSpecification.width">
+            <summary>
+            Window width in pixels. Default is 800.
+            </summary>
+        </member>
+        <member name="F:HealthEat.WindowSpecification.height">
+            <summary>
+            Window height in pixels. Default is 600.
+            </summary>
+        </member>
+        <member name="F:HealthEat.WindowSpecification.title">
+            <summary>
+            Window title text. Can be null.
+            </summary>
+        </member>
+        <member name="F:HealthEat.WindowSpecification.VSync">
+            <summary>
+            Whether to enable vertical synchronization. Default is false.
+            </summary>
+        </member>
+        <member name="F:HealthEat.WindowSpecification.resizable">
+            <summary>
+            Whether the window can be resized. Default is true.
+            </summary>
+        </member>
+        <member name="T:HealthEat.Window">
+            <summary>
+            Wrapper class for SFML RenderWindow.
+            Manages window creation, event handling, and rendering.
+            </summary>
+        </member>
+        <member name="M:HealthEat.Window.#ctor(HealthEat.InputController)">
+            <summary>
+            Initializes a new window with default specifications.
+            </summary>
+            <param name="controller">The input controller to use (deprecated).</param>
+        </member>
+        <member name="M:HealthEat.Window.#ctor(HealthEat.WindowSpecification)">
+            <summary>
+            Initializes a new window with the specified specifications.
+            </summary>
+            <param name="winSpec">The window specifications to use.</param>
+        </member>
+        <member name="M:HealthEat.Window.Close">
+            <summary>
+            Closes the window.
+            </summary>
+        </member>
+        <member name="M:HealthEat.Window.HandleEvents">
+            <summary>
+            Handles all pending window events and clears the render buffer.
+            </summary>
+        </member>
+        <member name="M:HealthEat.Window.Update">
+            <summary>
+            Displays the rendered frame to the window.
+            </summary>
+        </member>
+        <member name="M:HealthEat.Window.Test">
+            <summary>
+            Test method for rendering (used for debugging).
+            </summary>
+        </member>
+        <member name="P:HealthEat.Window.IsOpen">
+            <summary>
+            Gets whether the window is currently open.
+            </summary>
+        </member>
+        <member name="P:HealthEat.Window.RenderWindow">
+            <summary>
+            Gets the underlying SFML RenderWindow instance.
+            </summary>
+        </member>
+    </members>
+</doc>
