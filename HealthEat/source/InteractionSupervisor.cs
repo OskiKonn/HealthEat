@@ -8,8 +8,17 @@ using HealthEat.Exceptions;
 
 namespace HealthEat
 {
+    /// <summary>
+    /// Manages entity interactions and clickable objects within a scene.
+    /// Handles interaction hints, click detection, and interaction range checking.
+    /// </summary>
     internal class InteractionSupervisor
     {
+        /// <summary>
+        /// Initializes a new InteractionSupervisor for the specified scene.
+        /// </summary>
+        /// <param name="scene">The scene to manage interactions for.</param>
+        /// <param name="player">Optional player reference for interaction range checking.</param>
         public InteractionSupervisor(Scene scene, Player? player = null)
         {
 
@@ -25,30 +34,49 @@ namespace HealthEat
         }
 
 
+        /// <summary>
+        /// Adds an interactable entity to the interaction supervisor.
+        /// </summary>
+        /// <param name="interactable">The interactable entity to add.</param>
         public void AddInteractable(IInteractable interactable)
         {
             m_Interacatables.Add(interactable);
         }
 
-        
+        /// <summary>
+        /// Removes an interactable entity from the interaction supervisor.
+        /// </summary>
+        /// <param name="interactable">The interactable entity to remove.</param>
         public void RemoveInteractable(IInteractable interactable)
         {
             m_Interacatables.Remove(interactable);
         }
 
+        /// <summary>
+        /// Adds a clickable object to the interaction supervisor.
+        /// </summary>
+        /// <param name="clickable">The clickable object to add.</param>
         public void AddClickable(IClickable clickable)
         {
             m_Clickables.Add(clickable);
         }
 
-
+        /// <summary>
+        /// Removes a clickable object from the interaction supervisor.
+        /// </summary>
+        /// <param name="clickable">The clickable object to remove.</param>
         public void RemoveClickable(IClickable clickable)
         {
             m_Clickables.Remove(clickable);
         }
 
+        /// <summary>
+        /// Updates interaction detection, shows interaction hints, and handles interaction input.
+        /// </summary>
         public void Update()
         {
+            if (m_Player == null)
+                return;
 
             ClearInteractHint();
             float closest = 2000.0f;
@@ -82,25 +110,31 @@ namespace HealthEat
 
                 if (InputController.Get.IsActionTriggered(HE_Action.Interact))
                 {
-                    m_EntityToInteract.OnInteraction(m_Player);
+                    m_EntityToInteract?.OnInteraction(m_Player);
                 }
             }
         }
 
-
+        /// <summary>
+        /// Handles mouse click events and triggers clickable object callbacks.
+        /// </summary>
+        /// <param name="e">The mouse clicked event.</param>
         public void OnClickEvent(HE_MouseClickedEvent e)
         {
             for (int i = m_Clickables.Count - 1; i >= 0; i--)
             {
                 if (m_Clickables[i].ClickBounds.Contains(e.ClickPos))
                 {
-                    m_Clickables[i].OnClick();
+                    m_Clickables[i].OnClick(m_Player);
                     return;
                 }
             }
         }
 
-
+        /// <summary>
+        /// Handles interaction events from entities.
+        /// </summary>
+        /// <param name="interactor">The entity attempting to interact.</param>
         public void OnInteractEvent(Entity interactor)
         {
             if (interactor.EntityType != HE_EntityType.Player)
@@ -112,7 +146,10 @@ namespace HealthEat
             }
         }
 
-
+        /// <summary>
+        /// Sets the player reference for interaction range checking.
+        /// </summary>
+        /// <param name="p">The player entity, or null to clear the reference.</param>
         public void SetPlayerRef(Player? p)
         {
             m_Player = p;
@@ -133,9 +170,17 @@ namespace HealthEat
         //}
 
 
+        /// <summary>
+        /// Cleans up the interaction supervisor and unsubscribes from events.
+        /// </summary>
         public void Exit()
         {
             ClearInteractHint();
+            m_Player = null;
+            m_Clickables.Clear();
+            m_Interacatables.Clear();
+
+            HE_EventBus.Get.UnsubscribeFromEvent<HE_MouseClickedEvent>(OnClickEvent);
         }
 
 

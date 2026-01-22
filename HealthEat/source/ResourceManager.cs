@@ -9,9 +9,16 @@ using SFML;
 
 namespace HealthEat
 {
+    /// <summary>
+    /// Manages loading and retrieval of game resources, primarily textures.
+    /// Implements a singleton pattern.
+    /// </summary>
     internal class ResourceManager
     {
 
+        /// <summary>
+        /// Initializes a new ResourceManager and sets it as the singleton instance.
+        /// </summary>
         public ResourceManager()
         {
             #if HE_DEBUG
@@ -46,6 +53,11 @@ namespace HealthEat
             return m_Textures[fullTname];
         }
 
+        /// <summary>
+        /// Attempts to load a texture from a file path.
+        /// </summary>
+        /// <param name="file">The file path to load the texture from.</param>
+        /// <returns>True if the texture was successfully loaded, false otherwise.</returns>
         public bool TryLoadTextureFromFile(string file)
         {
             try
@@ -63,6 +75,10 @@ namespace HealthEat
             }
         }
 
+        /// <summary>
+        /// Loads all texture resources from the resources folder.
+        /// </summary>
+        /// <exception cref="HE_AssetLoadException">Thrown when the resource folder cannot be found.</exception>
         public void LoadResources()
         {
             if (!Directory.Exists(m_ResourceFoldetPath))
@@ -99,6 +115,9 @@ namespace HealthEat
             }
         }
 
+        /// <summary>
+        /// Gets the singleton instance of the ResourceManager.
+        /// </summary>
         public static ResourceManager Get => m_Instance;
 
         private static ResourceManager m_Instance = null!;

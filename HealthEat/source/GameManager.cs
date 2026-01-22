@@ -7,9 +7,16 @@ using System.Threading.Tasks;
 
 namespace HealthEat
 {
+    /// <summary>
+    /// Main game manager class that coordinates all game systems.
+    /// Handles window creation, input, level management, and the main game loop.
+    /// </summary>
     internal class GameManager
     {
 
+        /// <summary>
+        /// Initializes the GameManager with input controller, window, and level supervisor.
+        /// </summary>
         public GameManager()
         {
             m_InputCtrl = new InputController();
@@ -26,6 +33,7 @@ namespace HealthEat
 
             m_GameWindow = new Window(winSpec);
 
+            HE_EventBus.Get.SubscribeToEventForce<HE_ExitEvent>(Quit);
             HE_EventBus.Get.SubscribeToEvent<HE_KeyEvent>(KeyHandler);
             //HE_EventBus.Get.SubscribeToEvent<HE_KeyEvent>(ActionHandler);
             //HE_EventBus.Get.SubscribeToEvent<HE_KeyEvent> MovementHandler;
@@ -45,6 +53,9 @@ namespace HealthEat
             #endif
         }
 
+        /// <summary>
+        /// Runs the main game loop. Handles events, updates game state, and renders frames.
+        /// </summary>
         public void Run()
         {
             //m_GameSupervisors.LevelSupervisor.LoadLevel("Test level");
@@ -55,6 +66,13 @@ namespace HealthEat
                 m_Updating = true;
                 m_GameWindow.HandleEvents();
                 InputController.Get.UpdateKeyStates();
+                
+                // Check for pause/escape key
+                if (InputController.Get.IsActionTriggered(HE_Action.Pause))
+                {
+                    m_GameSupervisors.LevelSupervisor.LoadLevel(new MenuLevel(m_GameSupervisors.LevelSupervisor));
+                }
+                
                 m_GameSupervisors.LevelSupervisor.Update(m_Tick);
                 m_GameSupervisors.LevelSupervisor.Draw(m_GameWindow);
                 m_GameWindow.Update();
@@ -63,23 +81,21 @@ namespace HealthEat
             }
         }
 
-        public void Update()
+
+        /// <summary>
+        /// Handles the quit event. Closes the current level and game window.
+        /// </summary>
+        /// <param name="ev">The exit event that triggered this method.</param>
+        public void Quit(HE_ExitEvent ev)
         {
-            m_Tick = m_Clock.Restart().AsSeconds();
-            m_Updating = true;
-            m_GameWindow.HandleEvents();
-            InputController.Get.UpdateKeyStates();
-            m_GameSupervisors.LevelSupervisor.Update(m_Tick);
-            m_GameSupervisors.LevelSupervisor.Draw(m_GameWindow);
-            m_GameWindow.Update();
-            //m_PlayerCtrl.Update(m_Tick);
-            m_Updating = false;
+            m_GameSupervisors.LevelSupervisor.CloseLevel();
+            m_GameWindow.Close();
         }
 
 
         private void SetupScene()
         {
-            m_GameSupervisors.LevelSupervisor.LoadLevel("Test level");
+            m_GameSupervisors.LevelSupervisor.LoadLevel(new MenuLevel(m_GameSupervisors.LevelSupervisor));
         }
 
 
@@ -158,8 +174,14 @@ namespace HealthEat
         }
 
 
+        /// <summary>
+        /// Gets the input controller instance.
+        /// </summary>
         public InputController InputController => m_InputCtrl;
         //public Player GetPlayer => m_Player;
+        /// <summary>
+        /// Gets the current frame time (delta time) in seconds.
+        /// </summary>
         public static float GetTick => m_Tick;
 
         private HE_Clock m_Clock;
@@ -173,38 +195,29 @@ namespace HealthEat
     }
 
 
-    internal readonly record struct HE_InteractInfo
-    {
-
-        public HE_InteractInfo(PlayerData playerStats, Entity? callingEnt = null)
-        {
-            PlayerStats = playerStats;
-            Caller = callingEnt;
-        }
-
-        public readonly Entity? Caller = null;
-        public readonly PlayerData PlayerStats;
-
-    }
-
-
-    internal readonly record struct HE_ClickInfo
-    {
-
-        public HE_ClickInfo(PlayerData playerStats)
-        {
-            PlayerStats = playerStats;
-        }
-
-        public readonly PlayerData PlayerStats;
-
-    }
-
-
+    /// <summary>
+    /// Container structure holding references to game supervisors.
+    /// </summary>
     internal record struct HE_GameSupervisors
     {
+        /// <summary>
+        /// Reference to the game manager instance.
+        /// </summary>
         public GameManager GameManager;
+        /// <summary>
+        /// Reference to the level supervisor instance.
+        /// </summary>
         public LevelSupervisor LevelSupervisor;
     }
 
+    /// <summary>
+    /// Event type that signals the application should exit.
+    /// </summary>
+    internal readonly struct HE_ExitEvent : IHE_EventType
+    {
+        /// <summary>
+        /// Default constructor for exit event.
+        /// </summary>
+        public HE_ExitEvent() { }
+    }
 }

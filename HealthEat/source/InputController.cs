@@ -9,9 +9,16 @@ using System.Threading.Tasks;
 namespace HealthEat
 {
 
+    /// <summary>
+    /// Manages all input from keyboard and mouse.
+    /// Handles key bindings, action mapping, and input event broadcasting.
+    /// </summary>
     internal class InputController
     {
 
+        /// <summary>
+        /// Initializes a new InputController and sets it as the singleton instance.
+        /// </summary>
         public InputController()
         {
             sm_Instance = this;
@@ -21,6 +28,7 @@ namespace HealthEat
             HE_EventBus.Get.RegisterEvent<HE_MouseMoveEvent>();
             HE_EventBus.Get.RegisterEvent<HE_MousePressedEvent>();
             HE_EventBus.Get.RegisterEvent<HE_MouseReleasedEvent>();
+            HE_EventBus.Get.RegisterEvent<HE_MouseScrollEvent>();
 
             #if HE_DEBUG
             Console.WriteLine("[InputController]: Created InputController");
@@ -28,6 +36,9 @@ namespace HealthEat
         }
 
 
+        /// <summary>
+        /// Updates the current and previous key states. Should be called every frame.
+        /// </summary>
         public void UpdateKeyStates()
         {
             foreach(KeyValuePair<HE_Key, bool> kvp in m_CurrKeyState)
@@ -37,7 +48,9 @@ namespace HealthEat
             }
         }
 
-
+        /// <summary>
+        /// Sets the default key bindings for all game actions.
+        /// </summary>
         public void SetDefaultKeybinds()
         {
             m_Keybinds[HE_Action.MoveUp] = HE_Key.W;
@@ -57,7 +70,11 @@ namespace HealthEat
             }
         }
 
-
+        /// <summary>
+        /// Checks if an action is currently being held down.
+        /// </summary>
+        /// <param name="action">The action to check.</param>
+        /// <returns>True if the action is currently held, false otherwise.</returns>
         public bool IsActionHeld(HE_Action action)
         {
 
@@ -69,7 +86,11 @@ namespace HealthEat
             return false;
         }
 
-
+        /// <summary>
+        /// Checks if an action was just triggered (pressed this frame but not last frame).
+        /// </summary>
+        /// <param name="action">The action to check.</param>
+        /// <returns>True if the action was just triggered, false otherwise.</returns>
         public bool IsActionTriggered(HE_Action action)
         {
             if (m_Keybinds.TryGetValue(action, out HE_Key key))
@@ -83,25 +104,41 @@ namespace HealthEat
             return false;
         }
 
+        /// <summary>
+        /// Gets the current mouse position in window coordinates.
+        /// </summary>
+        /// <returns>The current mouse position as a 2D integer vector.</returns>
+        public HE_Vec2i GetMousePos()
+        {
+            return m_MouseMovingPos;
+        }
 
-        //public HE_Vec2i GetMousePos()
-        //{
-        //    return HE_Mouse.GetPosition(Window.ActiveWindow);
-        //}
 
-
+        /// <summary>
+        /// Handles key press events from the window.
+        /// </summary>
+        /// <param name="s">The event sender.</param>
+        /// <param name="e">The key event arguments.</param>
         public void HandleKeyPress(object? s, KeyEventArgs e)
         {
             HandleKeyAction(s, e, HE_KeyAction.Pressed);
         }
 
-
+        /// <summary>
+        /// Handles key release events from the window.
+        /// </summary>
+        /// <param name="s">The event sender.</param>
+        /// <param name="e">The key event arguments.</param>
         public void HandleKeyRelease(object? s, KeyEventArgs e)
         {
             HandleKeyAction(s, e, HE_KeyAction.Released);
         }
 
-
+        /// <summary>
+        /// Handles mouse button press events from the window.
+        /// </summary>
+        /// <param name="s">The event sender.</param>
+        /// <param name="e">The mouse button event arguments.</param>
         public void HandleMousePressedEvent(object? s, MouseButtonEventArgs e)
         {
             //if (s == null || (s != null && (HE_RenderWindow)s != Window.ActiveWindow))
@@ -119,6 +156,11 @@ namespace HealthEat
         }
 
 
+        /// <summary>
+        /// Handles mouse button release events from the window.
+        /// </summary>
+        /// <param name="s">The event sender.</param>
+        /// <param name="e">The mouse button event arguments.</param>
         public void HandleMouseReleasedEvent(object? s, MouseButtonEventArgs e)
         {
             //if (s == null || (s != null && (HE_RenderWindow)s != Window.ActiveWindow))
@@ -153,6 +195,11 @@ namespace HealthEat
         }
 
 
+        /// <summary>
+        /// Handles mouse movement events from the window.
+        /// </summary>
+        /// <param name="s">The event sender.</param>
+        /// <param name="e">The mouse move event arguments.</param>
         public void HandleMouseMovedEvent(object? s, MouseMoveEventArgs e)
         {
             //if (s == null || (s != null && (HE_RenderWindow)s != Window.ActiveWindow))
@@ -160,13 +207,24 @@ namespace HealthEat
             //    m_MouseMovingPos = new HE_Vec2i(0, 0);
             //    return;
             //}
+            m_MouseMovingPos = new HE_Vec2i(e.X, e.Y);
             if (m_Dragging)
             {
                 m_TimeSinceLastPress += GameManager.GetTick;
-                m_MouseMovingPos = new HE_Vec2i(e.X, e.Y);
                 HE_EventBus.Get.BroadcastEvent<HE_MouseMoveEvent>(new HE_MouseMoveEvent(e.X, e.Y));
             }
             
+        }
+
+
+        /// <summary>
+        /// Handles mouse wheel scroll events from the window.
+        /// </summary>
+        /// <param name="s">The event sender.</param>
+        /// <param name="e">The mouse wheel scroll event arguments.</param>
+        public void HandleMouseScrollEvent(object? s, MouseWheelScrollEventArgs e)
+        {
+            HE_EventBus.Get.BroadcastEvent(new HE_MouseScrollEvent(e.Delta));
         }
 
 
@@ -182,12 +240,14 @@ namespace HealthEat
         }
 
 
+        /// <summary>
+        /// Gets the singleton instance of the InputController.
+        /// </summary>
         public static InputController Get => sm_Instance;
 
         public bool IsDragging => m_Dragging;
         public HE_Key LastKeyPressed => m_LastKey;
         //public int MovementFlags => (int)m_MovementFlags;
-        public int MouseFlags => m_MouseFlags;
 
         private static InputController sm_Instance = null!;
         private Dictionary<HE_Action, HE_Key> m_Keybinds = new Dictionary<HE_Action, HE_Key>(9);
@@ -195,8 +255,6 @@ namespace HealthEat
         private Dictionary<HE_Key, bool> m_PrevKeyState = new Dictionary<HE_Key, bool>(9);
         private bool m_Dragging = false;
         private HE_Key m_LastKey;
-        //private HE_MovementFlags m_MovementFlags = 0;
-        private int m_MouseFlags = 0;
         private HE_Vec2i m_LastPressedPos = new HE_Vec2i(0, 0);
         private HE_Vec2i m_MouseMovingPos = new HE_Vec2i(0, 0);
         private HE_Vec2i m_MousePosDragStart = new HE_Vec2i(0, 0);
@@ -256,6 +314,11 @@ namespace HealthEat
     //    public HE_MovementFlags Action { get; }
     //    public HE_KeyAction KeyAction { get; }
     //}
+
+    internal readonly struct HE_MouseScrollEvent(float delta) : IHE_EventType
+    {
+        public float Delta { get; } = delta;
+    }
 
 
     internal struct HE_MouseMoveEvent : IHE_EventType

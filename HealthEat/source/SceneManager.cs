@@ -11,13 +11,18 @@ using SFW = SFML.Window;
 
 namespace HealthEat
 {
+    /// <summary>
+    /// Manages multiple scenes, their lifecycle, and active scene selection.
+    /// </summary>
     internal class SceneManager
     {
         //private static readonly Lazy<SceneManager> s_Instance = new Lazy<SceneManager>(() => new SceneManager(), false);
 
+        /// <summary>
+        /// Initializes a new SceneManager instance.
+        /// </summary>
         public SceneManager()
         {
-            Console.WriteLine("SceneManager created!");
         }
 
         ~SceneManager()
@@ -27,6 +32,10 @@ namespace HealthEat
             m_ActiveScene = null;
         }
 
+        /// <summary>
+        /// Updates all registered scenes.
+        /// </summary>
+        /// <param name="dt">Delta time in seconds since last frame.</param>
         public void Update(float dt)
         {
             foreach (Scene s in m_Scenes)
@@ -36,6 +45,10 @@ namespace HealthEat
 
         }
 
+        /// <summary>
+        /// Draws all registered scenes to the window.
+        /// </summary>
+        /// <param name="wnd">The window to draw to.</param>
         public void Draw(Window wnd)
         {
             foreach(Scene s in m_Scenes)
@@ -44,17 +57,27 @@ namespace HealthEat
             }
         }
 
+        /// <summary>
+        /// Destroys all registered scenes and clears the scene list.
+        /// </summary>
         public void DestroyScenes()
         {
-            foreach (Scene s in m_Scenes)
+            m_ActiveScene = null;
+
+            foreach (Scene sc in m_Scenes)
             {
-                UnregisterScene(s);
+                sc.Clear();
             }
+
+            m_Scenes.Clear();
 
             m_SceneCount = 0;
         }
 
-
+        /// <summary>
+        /// Unregisters a scene from the scene manager.
+        /// </summary>
+        /// <param name="sc">The scene to unregister.</param>
         public void UnregisterScene(Scene sc)
         {
             if (m_ActiveScene == sc)
@@ -66,6 +89,11 @@ namespace HealthEat
             }
         }
 
+        /// <summary>
+        /// Registers a new scene with the scene manager.
+        /// </summary>
+        /// <param name="sc">The scene to register.</param>
+        /// <returns>True if the scene was successfully registered, false otherwise.</returns>
         public bool RegisterScene(Scene sc)
         {
             m_Scenes.Add(sc);
@@ -83,11 +111,19 @@ namespace HealthEat
             return true;
         }
 
+        /// <summary>
+        /// Obtains a unique ID for a new scene.
+        /// </summary>
+        /// <returns>The next available scene ID.</returns>
         public int ObtainID()
         {
             return m_SceneCount;
         }
 
+        /// <summary>
+        /// Sets the active scene by scene instance.
+        /// </summary>
+        /// <param name="s">The scene to set as active.</param>
         public void SetActiveScene(Scene s)
         {
             if (s.ID < 0 || s.ID > m_SceneCount + 1)
@@ -96,6 +132,10 @@ namespace HealthEat
             m_ActiveScene = m_Scenes[s.ID];
         }
 
+        /// <summary>
+        /// Sets the active scene by scene name.
+        /// </summary>
+        /// <param name="sname">The name of the scene to set as active.</param>
         public void SetActiveScene(string sname)
         {
             foreach (Scene s in m_Scenes)

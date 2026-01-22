@@ -8,8 +8,15 @@ using HealthEat.Exceptions;
 
 namespace HealthEat
 {
+    /// <summary>
+    /// Handles physics simulation including collision detection and resolution.
+    /// Manages kinematic and static colliders.
+    /// </summary>
     internal class PhysicsEngine
     {
+        /// <summary>
+        /// Initializes a new PhysicsEngine instance.
+        /// </summary>
         public PhysicsEngine()
         {
             #if HE_DEBUG
@@ -17,26 +24,53 @@ namespace HealthEat
             #endif
         }
 
+        /// <summary>
+        /// Updates physics simulation by moving kinematic bodies and resolving collisions.
+        /// </summary>
+        /// <param name="dt">Delta time in seconds since last frame.</param>
         public void Update(float dt)
         {
             foreach (IKinematic body in m_KinematicEnts)
             {
+                if (body.Freezed)
+                    continue;
+
                 body.Move(body.Velocity * dt);
             }
 
             ResolveCollisions();
         }
 
+        /// <summary>
+        /// Clears all registered colliders from the physics engine.
+        /// </summary>
+        public void Clear()
+        {
+            m_StaticEnts.Clear();
+            m_KinematicEnts.Clear();
+            m_RegisteredColliders.Clear();
+        }
+
+        /// <summary>
+        /// Resolves collisions between all registered colliders.
+        /// Handles both kinematic-static and kinematic-kinematic collisions.
+        /// </summary>
         public void ResolveCollisions()
         {
             int count = m_KinematicEnts.Count;
 
             for (int i = 0; i < count; i++)
             {
-                IKinematic ki = m_KinematicEnts[i]; 
+                IKinematic ki = m_KinematicEnts[i];
+
+                if (!ki.CanTouch)
+                    continue;
 
                 foreach (ICollider st in m_StaticEnts)
                 {
+                    if (!st.CanTouch)
+                        continue;
+
                     if (CheckForCollision(ki, st, out HE_Vec2 pv))
                     {
                         ki.Push(pv);
@@ -47,21 +81,28 @@ namespace HealthEat
 
                 for (int j = i + 1; j < count; j++)
                 {
-                    IKinematic A = m_KinematicEnts[i];
+                    //IKinematic A = m_KinematicEnts[i];
                     IKinematic B = m_KinematicEnts[j];
 
-                    if (CheckForCollision(A, B, out HE_Vec2 pv))
-                    {
-                        A.Push(pv * 0.5f);
-                        B.Push(-pv * 0.5f);
+                    if (!B.CanTouch)
+                        continue;
 
-                        A.OnCollision(B);
-                        B.OnCollision(A);
+                    if (CheckForCollision(ki, B, out HE_Vec2 pv))
+                    {
+                        ki.Push(pv * 0.5f);
+                        ki.Push(-pv * 0.5f);
+
+                        ki.OnCollision(B);
+                        B.OnCollision(ki);
                     }
                 }
             }
         }
 
+        /// <summary>
+        /// Adds a collider to the physics engine for collision detection.
+        /// </summary>
+        /// <param name="item">The collider to add.</param>
         public void AddCollider(ICollider item)
         {
             if (m_RegisteredColliders.Contains(item))
@@ -73,8 +114,16 @@ namespace HealthEat
                 m_StaticEnts.Add(item);
 
             m_RegisteredColliders.Add(item);
+
+            #if HE_DEBUG
+            Console.WriteLine($"[PhysicsEngine]: Added collider {((IRenderable)item).Name}");
+            #endif
         }
 
+        /// <summary>
+        /// Removes a collider from the physics engine.
+        /// </summary>
+        /// <param name="item">The collider to remove.</param>
         public void RemoveCollider(ICollider item)
         {
             if (!m_RegisteredColliders.Contains(item))

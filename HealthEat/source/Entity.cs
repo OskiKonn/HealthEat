@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices.Marshalling;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -35,6 +36,7 @@ namespace HealthEat
         HE_FloatRect Body { get; }
         bool IsKinematic { get; }
         bool IsTrigger { get; }
+        bool CanTouch { get; }
 
         void OnCollision(ICollider other);
     }
@@ -44,6 +46,7 @@ namespace HealthEat
     {
         HE_Vec2 Velocity { get; set; }
         float Acceleration { get; set; }
+        bool Freezed { get; set; }
 
         void Move(HE_Vec2 offset);
         void Push(HE_Vec2 offset);
@@ -65,7 +68,7 @@ namespace HealthEat
     {
         HE_FloatRect ClickBounds { get; }
 
-        void OnClick();
+        void OnClick(Entity? target);
         void OnMouseEnter();
         void OnMouseLeave();
     }
@@ -76,7 +79,6 @@ namespace HealthEat
         
         public Entity(string name, string texture) : this(new HE_Vec2(0.0f, 0.0f), name, texture)
         {
-            Console.WriteLine($"[Entity]: Created entity {name}");
         }
 
 
@@ -87,52 +89,11 @@ namespace HealthEat
             m_Name = "Entity_" + name;
             CanTouch = touchable;
             Interactable = interactable;
+            m_CanInteract = interactable;
             Clickable = clickable;
             m_Index = AssignEntityIndex();
 
-            Console.WriteLine($"[Entity]: Created entity {name}");
-        }
 
-
-        public virtual void Update()
-        {
-            m_OnUpdateAction?.Invoke();
-        }
-
-
-        //public bool Intersects(HE_FloatRect rect)
-        //{
-        //    return m_Bounds.Intersects(rect);
-        //}
-
-
-        public virtual void OnInteraction()
-        {
-            #if HE_DEBUG
-            Console.WriteLine($"[Entity_{m_Name}]: Entity interacted");
-            #endif
-        }
-
-
-        public void SetOnUpdateAction(Action action)
-        {
-            m_OnUpdateAction += action;
-        }
-
-
-        public void SetOnClickAction(Action action)
-        {
-            m_OnClickAction += action;
-        }
-
-
-        public virtual void OnClick()
-        {
-
-            m_OnClickAction?.Invoke();
-            #if HE_DEBUG
-            Console.WriteLine($"[Entity_{m_Name}]: Entity clicked");
-            #endif
         }
 
 
@@ -159,12 +120,6 @@ namespace HealthEat
             set { m_Interactable = value; FirePropertyChangedEvent(HE_EntityProperty.Interactable, value); }
         }
 
-        public bool Clickable
-        {
-            get => m_Clickable;
-            set { m_Clickable = value; FirePropertyChangedEvent(HE_EntityProperty.Clickable, value); }
-        }
-
 
         public override HE_RenderObjectType ObjectType => HE_RenderObjectType.Entity;
         public HE_Vec2 Velocity { get => m_Velocity; set { if (value.X >= 0.0f && value.Y >= 0.0f) m_Velocity = value; } }
@@ -177,19 +132,17 @@ namespace HealthEat
         public uint GetIndex => m_Index;
         public HE_EntityType GetEntityType => EntityType;
         public bool IsTouchable => m_CanTouch;
-        public bool IsClickable => m_Clickable;
         public bool IsInteractable => m_Interactable;
 
         protected HE_Vec2 m_Velocity = new HE_Vec2(0f, 0f);
 
-        protected Action? m_OnUpdateAction;
-        protected Action? m_OnClickAction;
         protected bool m_CanTouch = false;
         protected bool m_Interactable = false;
         protected bool m_Clickable = false;
         protected bool m_CanInteract = false;
         protected float m_InteractRange = 1f;
         protected string m_InteractPrompt = "";
+
         private readonly uint m_Index;
         private static uint sm_NextIndex = 0;
 
@@ -220,16 +173,6 @@ namespace HealthEat
             m_OnInteractionAction?.Invoke(interactor);
         }
 
-        public virtual void OnMouseEnter()
-        {
-
-        }
-
-        public virtual void OnMouseLeave()
-        {
-
-        }
-
         public virtual void OnCollision(ICollider other)
         {
             m_OnCollisionAction?.Invoke(other);
@@ -239,8 +182,6 @@ namespace HealthEat
         public float InteractRange => m_InteractRange;
         public bool CanInteract { get => m_CanInteract; set => m_CanInteract = value; }
         public string InteractPrompt => m_InteractPrompt;
-
-        public HE_FloatRect ClickBounds => m_Bounds;
 
         public bool IsKinematic => false;
         public bool IsTrigger { get; private set; }
@@ -273,7 +214,7 @@ namespace HealthEat
         public virtual void Push(HE_Vec2 offset)
         {
             m_Context.Position += offset;
-            m_Border.Context.Position = m_Context.Position;
+            m_Border.Position = m_Context.Position;
             m_Bounds = m_Context.GetGlobalBounds();
         }
 
@@ -303,13 +244,67 @@ namespace HealthEat
         public float Acceleration { get; set; }
         public bool IsKinematic => true;
         public bool IsTrigger => false;
+        public bool Freezed { get => m_Freezed; set => m_Freezed = value; }
 
         protected float m_MoveSpeed = 150f;
+        protected bool m_Freezed = false;
 
         private event Action<ICollider>? m_OnCollisionAction;
 
     }
 
+
+    internal class InvisibleCollider : RectangleShapeObject, ICollider
+    {
+        public InvisibleCollider(HE_Vec2 position, HE_Vec2 size) : base(position, size, "Invisible_Collider" + sm_Counter++)
+        {
+            m_Context.FillColor = HE_Color.Transparent;
+            m_Context.OutlineColor = HE_Color.Transparent;
+            m_Context.OutlineThickness = 0.0f;
+        }
+
+        public void OnCollision(ICollider other)
+        {
+
+        }
+
+        public new void SetPosition(HE_Vec2 position)
+        {
+            m_Context.Position = position;
+            m_Border.Position = m_Context.Position;
+            m_Bounds = GetGlobalBounds();
+        }
+
+        protected override void OnMouseScrollEvent(HE_MouseScrollEvent args)
+        {
+            float delta = m_Context.Scale.X + (args.Delta / 100);
+
+            if (m_IsDragged)
+            {
+
+                if (InputController.Get.IsActionHeld(HE_Action.MoveLeft))
+                    m_Context.Size = new HE_Vec2(m_Context.Size.X + 10f, m_Context.Size.Y);
+
+                if (InputController.Get.IsActionHeld(HE_Action.MoveRight))
+                    m_Context.Size = new HE_Vec2(m_Context.Size.X - 10f, m_Context.Size.Y);
+
+                if (InputController.Get.IsActionHeld(HE_Action.MoveUp))
+                    m_Context.Size = new HE_Vec2(m_Context.Size.X, m_Context.Size.Y + 10f);
+
+                if (InputController.Get.IsActionHeld(HE_Action.MoveDown))
+                    m_Context.Size = new HE_Vec2(m_Context.Size.X, m_Context.Size.Y - 10f);
+
+                SetScale(delta);
+            }
+        }
+
+        public bool CanTouch { get; set; } = true;
+        public bool IsKinematic => false;
+        public bool IsTrigger { get; private set; }
+        public override bool Collider => true;
+
+        private static int sm_Counter = 0;
+    }
 
     //internal class HE_EntityPropertyChangedEventArgs : EventArgs
     //{

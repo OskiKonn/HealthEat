@@ -10,14 +10,25 @@ using HealthEat;
 
 namespace HealthEat
 {
+    /// <summary>
+    /// Main entry point for the HealthEat application.
+    /// Initializes the game window, resource manager, and game manager.
+    /// </summary>
     internal class Program
     {
 
+        /// <summary>
+        /// Default constructor for Program class.
+        /// </summary>
         public Program()
         {
 
         }
 
+        /// <summary>
+        /// Main entry point of the application.
+        /// </summary>
+        /// <param name="args">Command line arguments passed to the program.</param>
         static void Main(string[] args)
         {
             Console.WriteLine("Hello, World!");
@@ -26,6 +37,9 @@ namespace HealthEat
             
         }
 
+        /// <summary>
+        /// Runs the main game loop. Initializes window, resource manager, and game manager.
+        /// </summary>
         public void Run()
         {
             WindowSpecification winSpec = new WindowSpecification()

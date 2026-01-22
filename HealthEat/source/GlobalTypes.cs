@@ -26,27 +26,26 @@ namespace HealthEat
 {
 
     /// <summary>
-    /// Extension for SFML Vector2f class
+    /// Extension methods for SFML Vector2f and Vector2i classes.
     /// </summary>
     public static class Vector2Extension
     {
 
         /// <summary>
-        /// Returns length of vector
+        /// Calculates and returns the length (magnitude) of a 2D float vector.
         /// </summary>
-        /// <param name="v">vector instance</param>
-        /// <returns>Vector length</returns>
+        /// <param name="v">The vector instance.</param>
+        /// <returns>The length of the vector.</returns>
         public static float GetLength(this HE_Vec2 v)
         {
             return (float)Math.Sqrt(v.X * v.X + v.Y * v.Y);
         }
 
-
         /// <summary>
-        /// Returns length of vector
+        /// Calculates and returns the length (magnitude) of a 2D integer vector.
         /// </summary>
-        /// <param name="v">vector instance</param>
-        /// <returns>Vector length</returns>
+        /// <param name="v">The vector instance.</param>
+        /// <returns>The length of the vector.</returns>
         public static float GetLength(this HE_Vec2i v)
         {
             return (float)Math.Sqrt(v.X * v.X + v.Y * v.Y);
